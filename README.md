@@ -36,7 +36,7 @@ helm install selectel-operator \
   --create-namespace
 ```
 
-`<version>` is the git tag without the leading `v`. A tag `v*` publishes the image `ghcr.io/<owner>/<repo>:<tag>` and both charts. The chart in this repository is `0.0.4`. From a checkout:
+`<version>` is the git tag without the leading `v`. A tag `v*` publishes the image `ghcr.io/<owner>/<repo>:<tag>` and both charts. The chart in this repository is `0.0.5`. From a checkout:
 
 ```bash
 helm install selectel-operator helm/selectel-operator \
