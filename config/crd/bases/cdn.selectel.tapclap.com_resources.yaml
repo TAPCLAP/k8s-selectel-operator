@@ -56,8 +56,11 @@ spec:
             description: spec defines the desired state of Resource
             properties:
               active:
+                description: active enables the CDN resource.
                 type: boolean
               allowed_http_methods:
+                description: allowedHttpMethods lists extra methods. GET, HEAD, and
+                  OPTIONS are always allowed.
                 items:
                   description: HTTPMethod is an extra method allowed besides GET,
                     HEAD, and OPTIONS.
@@ -76,49 +79,69 @@ spec:
                   type: string
                 type: array
               auth:
-                description: ResourceAuth is request authorization.
+                description: auth is request authorization.
                 properties:
                   forbidden:
+                    description: forbidden denies access when true.
                     type: boolean
                   md5:
-                    description: AuthMD5 is signature authorization.
+                    description: md5 is local signature authorization.
                     properties:
                       anywhere:
+                        description: anywhere ignores the client IP address in the
+                          signature.
                         type: boolean
                       forever:
+                        description: forever applies no time limit to the signature.
                         type: boolean
                       secret:
+                        description: secret is the signature secret word.
                         type: string
                     type: object
                   url:
+                    description: url is the URL of an external authorization script.
                     type: string
                 type: object
               cache:
-                description: ResourceCache is cache behavior.
+                description: cache is CDN cache behavior.
                 properties:
                   args_blacklist:
+                    description: argsBlacklist lists query parameters ignored when
+                      caching. It requires considerArgs.
                     items:
                       type: string
                     type: array
                   args_whitelist:
+                    description: argsWhitelist lists query parameters considered when
+                      caching. It requires considerArgs.
                     items:
                       type: string
                     type: array
                   consider_args:
+                    description: considerArgs includes the query string in the cache
+                      key.
                     type: boolean
                   consider_cookies:
+                    description: considerCookies includes cookies in the cache key.
                     type: boolean
                   cookies_blacklist:
+                    description: cookiesBlacklist lists cookies ignored when caching.
+                      It requires considerCookies.
                     items:
                       type: string
                     type: array
                   cookies_whitelist:
+                    description: cookiesWhitelist lists cookies considered when caching.
+                      It requires considerCookies.
                     items:
                       type: string
                     type: array
                   disable:
+                    description: disable turns caching off when true.
                     type: boolean
                   stale_conditions:
+                    description: staleConditions lists when the last cached copy is
+                      served. It requires useStale.
                     items:
                       description: StaleCondition is a reason to serve stale cache.
                       enum:
@@ -136,22 +159,34 @@ spec:
                       type: string
                     type: array
                   use_stale:
+                    description: useStale serves the last cached copy when the origin
+                      is unavailable.
                     type: boolean
                   valid:
-                    description: CacheValid is cache lifetime per status class. Values
-                      match ^(\d+)[smhd]$.
+                    description: valid is the cache time for each response class.
                     properties:
                       2xx:
+                        description: 2xx is how long successful responses stay in
+                          the CDN cache.
                         type: string
                       3xx:
+                        description: 3xx is how long redirects stay in the CDN cache.
                         type: string
                       4xx:
+                        description: 4xx is how long client errors stay in the CDN
+                          cache.
                         type: string
                       5xx:
+                        description: 5xx is how long server errors stay in the CDN
+                          cache.
                         type: string
                       browser:
+                        description: browser is how long a browser may cache the response
+                          after receiving it from the CDN.
                         type: string
                       force:
+                        description: force makes the CDN ignore Cache-Control and
+                          Expires from the origin.
                         type: boolean
                     type: object
                 type: object
@@ -168,38 +203,50 @@ spec:
                     type: integer
                 type: object
               compress:
-                description: ResourceCompress is compression.
+                description: compress is response compression.
                 properties:
                   brotli:
+                    description: brotli compresses responses with Brotli.
                     type: boolean
                   gzip:
+                    description: gzip compresses responses with Gzip.
                     type: boolean
                 type: object
               cors:
-                description: ResourceCORS is CORS behavior.
+                description: cors is CORS behavior.
                 properties:
                   always:
+                    description: |-
+                      always adds Access-Control-Allow-Origin for every status code.
+                      False adds it only for specific status codes.
                     type: boolean
                   credentials:
+                    description: credentials sets Access-Control-Allow-Credentials.
                     type: boolean
                   disable:
+                    description: disable turns CORS off when true.
                     type: boolean
                   domains:
+                    description: domains lists allowed origins.
                     items:
                       type: string
                     type: array
                   expose:
+                    description: expose lists headers available to the top-level API.
                     items:
                       type: string
                     type: array
                   headers:
+                    description: headers lists safe request headers.
                     items:
                       type: string
                     type: array
                   max_age:
+                    description: maxAge is the preflight response lifetime in seconds.
                     format: int32
                     type: integer
                   methods:
+                    description: methods lists safe HTTP methods.
                     items:
                       type: string
                     type: array
@@ -213,155 +260,205 @@ spec:
                 - Orphan
                 type: string
               follow_redirects:
+                description: followRedirects follows redirects from the origin.
                 type: boolean
               headers:
-                description: ResourceHeaders adds or hides headers.
+                description: headers adds or hides request and response headers.
                 properties:
                   hide_in_response:
+                    description: hideInResponse lists origin headers the CDN omits
+                      from the client response.
                     items:
                       type: string
                     type: array
                   request:
                     additionalProperties:
                       type: string
+                    description: request adds headers to origin requests. The key
+                      is the header name.
                     type: object
                   response:
                     additionalProperties:
                       type: string
+                    description: response adds headers to client responses. The key
+                      is the header name.
                     type: object
                 type: object
               http2https:
+                description: http2https redirects HTTP requests to HTTPS.
                 type: boolean
               https_only:
+                description: httpsOnly serves the resource over HTTPS only.
                 type: boolean
               ioss:
+                description: ioss enables image optimization and modification.
                 type: boolean
               limitations:
-                description: ResourceLimitations groups distribution restrictions.
+                description: limitations restricts distribution by geography, IP,
+                  Referer, or User-Agent.
                 properties:
                   geo:
+                    description: geo restricts distribution by country.
                     items:
                       description: GeoLimitation restricts distribution by country.
                       properties:
                         default_action:
-                          description: AccessAction is allow or deny.
+                          description: defaultAction is allow or deny when no exception
+                            matches.
                           enum:
                           - allow
                           - deny
                           type: string
                         exclude:
+                          description: exclude lists geographic exceptions.
                           items:
                             description: GeoExclude is a geographic exception.
                             properties:
                               action:
-                                description: AccessAction is allow or deny.
+                                description: action is allow or deny for this exception.
                                 enum:
                                 - allow
                                 - deny
                                 type: string
                               country:
+                                description: country is an ISO 3166-1 alpha-2 country
+                                  code.
                                 type: string
                               region:
+                                description: region is an ISO 3166-2 region code.
                                 type: string
                             type: object
                           type: array
                         times:
+                          description: times limits when this restriction applies.
                           items:
                             description: LimitationTime bounds a restriction.
                             properties:
                               end:
+                                description: end is the end of the interval in ISO
+                                  8601.
                                 type: string
                               start:
+                                description: start is the start of the interval in
+                                  ISO 8601.
                                 type: string
                             type: object
                           type: array
                       type: object
                     type: array
                   ip:
+                    description: ip restricts distribution by IP address.
                     items:
                       description: IPLimitation restricts distribution by IP.
                       properties:
                         default_action:
-                          description: AccessAction is allow or deny.
+                          description: defaultAction is allow or deny when no exception
+                            matches.
                           enum:
                           - allow
                           - deny
                           type: string
                         exclude:
+                          description: exclude lists IP exceptions.
                           items:
                             description: IPExclude is an IP exception.
                             properties:
                               ip:
+                                description: ip is an address in CIDR notation.
                                 type: string
                             type: object
                           type: array
                         times:
+                          description: times limits when this restriction applies.
                           items:
                             description: LimitationTime bounds a restriction.
                             properties:
                               end:
+                                description: end is the end of the interval in ISO
+                                  8601.
                                 type: string
                               start:
+                                description: start is the start of the interval in
+                                  ISO 8601.
                                 type: string
                             type: object
                           type: array
                       type: object
                     type: array
                   referer:
+                    description: referer restricts distribution by Referer.
                     items:
                       description: RefererLimitation restricts distribution by Referer.
                       properties:
                         default_action:
-                          description: AccessAction is allow or deny.
+                          description: defaultAction is allow or deny when no exception
+                            matches.
                           enum:
                           - allow
                           - deny
                           type: string
                         exclude:
+                          description: exclude lists Referer exceptions.
                           items:
                             description: RefererExclude is a Referer exception.
                             properties:
                               referer:
+                                description: referer is a domain name or regular expression.
                                 type: string
                             type: object
                           type: array
                         times:
+                          description: times limits when this restriction applies.
                           items:
                             description: LimitationTime bounds a restriction.
                             properties:
                               end:
+                                description: end is the end of the interval in ISO
+                                  8601.
                                 type: string
                               start:
+                                description: start is the start of the interval in
+                                  ISO 8601.
                                 type: string
                             type: object
                           type: array
                       type: object
                     type: array
                   useragent:
+                    description: userAgent restricts distribution by User-Agent.
                     items:
                       description: UserAgentLimitation restricts distribution by User-Agent.
                       properties:
                         default_action:
-                          description: AccessAction is allow or deny.
+                          description: defaultAction is allow or deny when no exception
+                            matches.
                           enum:
                           - allow
                           - deny
                           type: string
                         exclude:
+                          description: exclude lists User-Agent exceptions.
                           items:
                             description: UserAgentExclude is a User-Agent exception.
                             properties:
                               useragent:
+                                description: userAgent is a User-Agent value or regular
+                                  expression.
                                 type: string
                             type: object
                           type: array
                         times:
+                          description: times limits when this restriction applies.
                           items:
                             description: LimitationTime bounds a restriction.
                             properties:
                               end:
+                                description: end is the end of the interval in ISO
+                                  8601.
                                 type: string
                               start:
+                                description: start is the start of the interval in
+                                  ISO 8601.
                                 type: string
                             type: object
                           type: array
@@ -373,6 +470,8 @@ spec:
                   description: ResourceLocation is path-specific configuration.
                   properties:
                     allowed_http_methods:
+                      description: allowedHttpMethods lists extra methods for this
+                        path. GET, HEAD, and OPTIONS are always allowed.
                       items:
                         description: HTTPMethod is an extra method allowed besides
                           GET, HEAD, and OPTIONS.
@@ -391,49 +490,71 @@ spec:
                         type: string
                       type: array
                     auth:
-                      description: ResourceAuth is request authorization.
+                      description: auth is request authorization for this path.
                       properties:
                         forbidden:
+                          description: forbidden denies access when true.
                           type: boolean
                         md5:
-                          description: AuthMD5 is signature authorization.
+                          description: md5 is local signature authorization.
                           properties:
                             anywhere:
+                              description: anywhere ignores the client IP address
+                                in the signature.
                               type: boolean
                             forever:
+                              description: forever applies no time limit to the signature.
                               type: boolean
                             secret:
+                              description: secret is the signature secret word.
                               type: string
                           type: object
                         url:
+                          description: url is the URL of an external authorization
+                            script.
                           type: string
                       type: object
                     cache:
-                      description: ResourceCache is cache behavior.
+                      description: cache is cache behavior for this path.
                       properties:
                         args_blacklist:
+                          description: argsBlacklist lists query parameters ignored
+                            when caching. It requires considerArgs.
                           items:
                             type: string
                           type: array
                         args_whitelist:
+                          description: argsWhitelist lists query parameters considered
+                            when caching. It requires considerArgs.
                           items:
                             type: string
                           type: array
                         consider_args:
+                          description: considerArgs includes the query string in the
+                            cache key.
                           type: boolean
                         consider_cookies:
+                          description: considerCookies includes cookies in the cache
+                            key.
                           type: boolean
                         cookies_blacklist:
+                          description: cookiesBlacklist lists cookies ignored when
+                            caching. It requires considerCookies.
                           items:
                             type: string
                           type: array
                         cookies_whitelist:
+                          description: cookiesWhitelist lists cookies considered when
+                            caching. It requires considerCookies.
                           items:
                             type: string
                           type: array
                         disable:
+                          description: disable turns caching off when true.
                           type: boolean
                         stale_conditions:
+                          description: staleConditions lists when the last cached
+                            copy is served. It requires useStale.
                           items:
                             description: StaleCondition is a reason to serve stale
                               cache.
@@ -452,208 +573,284 @@ spec:
                             type: string
                           type: array
                         use_stale:
+                          description: useStale serves the last cached copy when the
+                            origin is unavailable.
                           type: boolean
                         valid:
-                          description: CacheValid is cache lifetime per status class.
-                            Values match ^(\d+)[smhd]$.
+                          description: valid is the cache time for each response class.
                           properties:
                             2xx:
+                              description: 2xx is how long successful responses stay
+                                in the CDN cache.
                               type: string
                             3xx:
+                              description: 3xx is how long redirects stay in the CDN
+                                cache.
                               type: string
                             4xx:
+                              description: 4xx is how long client errors stay in the
+                                CDN cache.
                               type: string
                             5xx:
+                              description: 5xx is how long server errors stay in the
+                                CDN cache.
                               type: string
                             browser:
+                              description: browser is how long a browser may cache
+                                the response after receiving it from the CDN.
                               type: string
                             force:
+                              description: force makes the CDN ignore Cache-Control
+                                and Expires from the origin.
                               type: boolean
                           type: object
                       type: object
                     compress:
-                      description: ResourceCompress is compression.
+                      description: compress is compression for this path.
                       properties:
                         brotli:
+                          description: brotli compresses responses with Brotli.
                           type: boolean
                         gzip:
+                          description: gzip compresses responses with Gzip.
                           type: boolean
                       type: object
                     cors:
-                      description: ResourceCORS is CORS behavior.
+                      description: cors is CORS behavior for this path.
                       properties:
                         always:
+                          description: |-
+                            always adds Access-Control-Allow-Origin for every status code.
+                            False adds it only for specific status codes.
                           type: boolean
                         credentials:
+                          description: credentials sets Access-Control-Allow-Credentials.
                           type: boolean
                         disable:
+                          description: disable turns CORS off when true.
                           type: boolean
                         domains:
+                          description: domains lists allowed origins.
                           items:
                             type: string
                           type: array
                         expose:
+                          description: expose lists headers available to the top-level
+                            API.
                           items:
                             type: string
                           type: array
                         headers:
+                          description: headers lists safe request headers.
                           items:
                             type: string
                           type: array
                         max_age:
+                          description: maxAge is the preflight response lifetime in
+                            seconds.
                           format: int32
                           type: integer
                         methods:
+                          description: methods lists safe HTTP methods.
                           items:
                             type: string
                           type: array
                       type: object
                     headers:
-                      description: ResourceHeaders adds or hides headers.
+                      description: headers adds or hides headers for this path.
                       properties:
                         hide_in_response:
+                          description: hideInResponse lists origin headers the CDN
+                            omits from the client response.
                           items:
                             type: string
                           type: array
                         request:
                           additionalProperties:
                             type: string
+                          description: request adds headers to origin requests. The
+                            key is the header name.
                           type: object
                         response:
                           additionalProperties:
                             type: string
+                          description: response adds headers to client responses.
+                            The key is the header name.
                           type: object
                       type: object
                     ioss:
+                      description: ioss enables image optimization for this path.
                       type: boolean
                     limitations:
-                      description: ResourceLimitations groups distribution restrictions.
+                      description: limitations restricts distribution for this path.
                       properties:
                         geo:
+                          description: geo restricts distribution by country.
                           items:
                             description: GeoLimitation restricts distribution by country.
                             properties:
                               default_action:
-                                description: AccessAction is allow or deny.
+                                description: defaultAction is allow or deny when no
+                                  exception matches.
                                 enum:
                                 - allow
                                 - deny
                                 type: string
                               exclude:
+                                description: exclude lists geographic exceptions.
                                 items:
                                   description: GeoExclude is a geographic exception.
                                   properties:
                                     action:
-                                      description: AccessAction is allow or deny.
+                                      description: action is allow or deny for this
+                                        exception.
                                       enum:
                                       - allow
                                       - deny
                                       type: string
                                     country:
+                                      description: country is an ISO 3166-1 alpha-2
+                                        country code.
                                       type: string
                                     region:
+                                      description: region is an ISO 3166-2 region
+                                        code.
                                       type: string
                                   type: object
                                 type: array
                               times:
+                                description: times limits when this restriction applies.
                                 items:
                                   description: LimitationTime bounds a restriction.
                                   properties:
                                     end:
+                                      description: end is the end of the interval
+                                        in ISO 8601.
                                       type: string
                                     start:
+                                      description: start is the start of the interval
+                                        in ISO 8601.
                                       type: string
                                   type: object
                                 type: array
                             type: object
                           type: array
                         ip:
+                          description: ip restricts distribution by IP address.
                           items:
                             description: IPLimitation restricts distribution by IP.
                             properties:
                               default_action:
-                                description: AccessAction is allow or deny.
+                                description: defaultAction is allow or deny when no
+                                  exception matches.
                                 enum:
                                 - allow
                                 - deny
                                 type: string
                               exclude:
+                                description: exclude lists IP exceptions.
                                 items:
                                   description: IPExclude is an IP exception.
                                   properties:
                                     ip:
+                                      description: ip is an address in CIDR notation.
                                       type: string
                                   type: object
                                 type: array
                               times:
+                                description: times limits when this restriction applies.
                                 items:
                                   description: LimitationTime bounds a restriction.
                                   properties:
                                     end:
+                                      description: end is the end of the interval
+                                        in ISO 8601.
                                       type: string
                                     start:
+                                      description: start is the start of the interval
+                                        in ISO 8601.
                                       type: string
                                   type: object
                                 type: array
                             type: object
                           type: array
                         referer:
+                          description: referer restricts distribution by Referer.
                           items:
                             description: RefererLimitation restricts distribution
                               by Referer.
                             properties:
                               default_action:
-                                description: AccessAction is allow or deny.
+                                description: defaultAction is allow or deny when no
+                                  exception matches.
                                 enum:
                                 - allow
                                 - deny
                                 type: string
                               exclude:
+                                description: exclude lists Referer exceptions.
                                 items:
                                   description: RefererExclude is a Referer exception.
                                   properties:
                                     referer:
+                                      description: referer is a domain name or regular
+                                        expression.
                                       type: string
                                   type: object
                                 type: array
                               times:
+                                description: times limits when this restriction applies.
                                 items:
                                   description: LimitationTime bounds a restriction.
                                   properties:
                                     end:
+                                      description: end is the end of the interval
+                                        in ISO 8601.
                                       type: string
                                     start:
+                                      description: start is the start of the interval
+                                        in ISO 8601.
                                       type: string
                                   type: object
                                 type: array
                             type: object
                           type: array
                         useragent:
+                          description: userAgent restricts distribution by User-Agent.
                           items:
                             description: UserAgentLimitation restricts distribution
                               by User-Agent.
                             properties:
                               default_action:
-                                description: AccessAction is allow or deny.
+                                description: defaultAction is allow or deny when no
+                                  exception matches.
                                 enum:
                                 - allow
                                 - deny
                                 type: string
                               exclude:
+                                description: exclude lists User-Agent exceptions.
                                 items:
                                   description: UserAgentExclude is a User-Agent exception.
                                   properties:
                                     useragent:
+                                      description: userAgent is a User-Agent value
+                                        or regular expression.
                                       type: string
                                   type: object
                                 type: array
                               times:
+                                description: times limits when this restriction applies.
                                 items:
                                   description: LimitationTime bounds a restriction.
                                   properties:
                                     end:
+                                      description: end is the end of the interval
+                                        in ISO 8601.
                                       type: string
                                     start:
+                                      description: start is the start of the interval
+                                        in ISO 8601.
                                       type: string
                                   type: object
                                 type: array
@@ -661,39 +858,59 @@ spec:
                           type: array
                       type: object
                     order:
+                      description: order is the regular-expression check order for
+                        this location.
                       format: int32
                       maximum: 999999
                       minimum: 1
                       type: integer
                     origin:
-                      description: Origin is the content source.
+                      description: origin is the content source for this path.
                       properties:
                         aws:
-                          description: OriginAWS is AWS authorization for origin requests.
+                          description: aws is AWS authorization for origin requests.
                           properties:
                             auth:
-                              description: AWSAuth holds origin credentials for AWS-style
-                                authorization.
+                              description: auth holds the AWS authorization keys.
                               properties:
                                 access_key:
+                                  description: accessKey is the AWS access key identifier.
                                   type: string
                                 secret_key:
+                                  description: secretKey is the AWS secret access
+                                    key.
                                   type: string
                               type: object
                           type: object
                         connect_timeout:
+                          description: connectTimeout is the connect timeout, for
+                            example 5s.
                           type: string
                         forward_host_header:
+                          description: |-
+                            forwardHostHeader sends the Host header from the CDN request to the origin.
+                            It cannot be set together with hostname.
                           type: boolean
                         hostname:
+                          description: |-
+                            hostname is the Host header sent to the origin.
+                            It cannot be set together with forwardHostHeader.
                           type: string
                         https:
+                          description: https uses HTTPS when the CDN contacts the
+                            origin.
                           type: boolean
                         read_timeout:
+                          description: readTimeout is the read timeout, for example
+                            10s.
                           type: string
                         s3_bucket:
+                          description: s3Bucket is the allowed bucket when the origin
+                            is a shared S3 domain.
                           type: string
                         send_timeout:
+                          description: sendTimeout is the send timeout, for example
+                            10s.
                           type: string
                         servers:
                           additionalProperties:
@@ -701,33 +918,48 @@ spec:
                               or IP key.
                             properties:
                               backup:
+                                description: backup marks this origin as a backup.
                                 type: boolean
                               max_fails:
+                                description: maxFails is the number of failed attempts
+                                  used for load balancing.
                                 format: int32
                                 type: integer
                               port:
+                                description: port is the origin port. Selectel uses
+                                  80 without origin HTTPS and 443 with it.
                                 format: int32
                                 maximum: 65535
                                 minimum: 1
                                 type: integer
                               weight:
+                                description: weight is the load-balancing weight.
                                 format: int32
                                 minimum: 1
                                 type: integer
                             type: object
+                          description: servers lists origin servers. The key is a
+                            domain or IP.
                           type: object
                         sni_hostname:
+                          description: |-
+                            sniHostname overrides the name used for origin certificate verification and SNI.
+                            It requires https to be true.
                           type: string
                         ssl_verify:
+                          description: sslVerify checks the origin certificate. It
+                            requires https to be true.
                           type: boolean
                       type: object
                     packaging:
-                      description: ResourcePackaging is video conversion.
+                      description: packaging is video conversion for this path.
                       properties:
                         mp4:
-                          description: PackagingMP4 converts MP4 output.
+                          description: mp4 holds MPEG-4 conversion parameters.
                           properties:
                             output_protocols:
+                              description: outputProtocols lists protocols used to
+                                deliver the converted video.
                               items:
                                 description: OutputProtocol is a packaged video protocol.
                                 enum:
@@ -738,40 +970,53 @@ spec:
                           type: object
                       type: object
                     return:
-                      description: ResourceReturn forces a response.
+                      description: return forces a response for this path.
                       properties:
                         body:
+                          description: body is the forced response body.
                           type: string
                         http_status_code:
+                          description: httpStatusCode is the forced HTTP status code.
                           format: int32
                           maximum: 599
                           minimum: 100
                           type: integer
                         url:
+                          description: url is an absolute redirect URL for status
+                            codes 301, 302, 303, 307, and 308.
                           type: string
                       type: object
                     rewrite:
+                      description: rewrite rewrites the request path.
                       items:
                         description: ResourceRewrite rewrites the request path.
                         properties:
                           flag:
-                            description: RewriteFlag stops further rewrite processing.
+                            description: flag stops further rewrite processing. The
+                              only value is break.
                             enum:
                             - break
                             type: string
                           from:
+                            description: from is the regular expression matched against
+                              the source URL.
                             type: string
                           scope:
-                            description: RewriteScope is where a rewrite runs.
+                            description: scope runs the rewrite on edge nodes or on
+                              shielding nodes.
                             enum:
                             - edge
                             - shield
                             type: string
                           to:
+                            description: to is the target address for the rewritten
+                              request.
                             type: string
                         type: object
                       type: array
                   type: object
+                description: locations holds path-specific rules. The key is a path
+                  pattern such as /images or /video/*.
                 type: object
               managementPolicy:
                 default: Manage
@@ -784,6 +1029,7 @@ spec:
                 - Manage
                 type: string
               modern_tls_only:
+                description: modernTlsOnly allows only modern TLS versions.
                 type: boolean
               name:
                 description: name is the Selectel resource name. Empty means metadata.name.
@@ -792,40 +1038,57 @@ spec:
                 pattern: ^[a-zA-Zа-яА-ЯёЁ0-9\-_ ]{1,50}$
                 type: string
               names:
+                description: names lists personal domains (CNAMEs) served by this
+                  CDN resource.
                 items:
                   type: string
                 type: array
               no_http2:
+                description: noHttp2 disables HTTP/2.
                 type: boolean
               origin:
-                description: Origin is the content source.
+                description: origin is the content source.
                 properties:
                   aws:
-                    description: OriginAWS is AWS authorization for origin requests.
+                    description: aws is AWS authorization for origin requests.
                     properties:
                       auth:
-                        description: AWSAuth holds origin credentials for AWS-style
-                          authorization.
+                        description: auth holds the AWS authorization keys.
                         properties:
                           access_key:
+                            description: accessKey is the AWS access key identifier.
                             type: string
                           secret_key:
+                            description: secretKey is the AWS secret access key.
                             type: string
                         type: object
                     type: object
                   connect_timeout:
+                    description: connectTimeout is the connect timeout, for example
+                      5s.
                     type: string
                   forward_host_header:
+                    description: |-
+                      forwardHostHeader sends the Host header from the CDN request to the origin.
+                      It cannot be set together with hostname.
                     type: boolean
                   hostname:
+                    description: |-
+                      hostname is the Host header sent to the origin.
+                      It cannot be set together with forwardHostHeader.
                     type: string
                   https:
+                    description: https uses HTTPS when the CDN contacts the origin.
                     type: boolean
                   read_timeout:
+                    description: readTimeout is the read timeout, for example 10s.
                     type: string
                   s3_bucket:
+                    description: s3Bucket is the allowed bucket when the origin is
+                      a shared S3 domain.
                     type: string
                   send_timeout:
+                    description: sendTimeout is the send timeout, for example 10s.
                     type: string
                   servers:
                     additionalProperties:
@@ -833,33 +1096,48 @@ spec:
                         key.
                       properties:
                         backup:
+                          description: backup marks this origin as a backup.
                           type: boolean
                         max_fails:
+                          description: maxFails is the number of failed attempts used
+                            for load balancing.
                           format: int32
                           type: integer
                         port:
+                          description: port is the origin port. Selectel uses 80 without
+                            origin HTTPS and 443 with it.
                           format: int32
                           maximum: 65535
                           minimum: 1
                           type: integer
                         weight:
+                          description: weight is the load-balancing weight.
                           format: int32
                           minimum: 1
                           type: integer
                       type: object
+                    description: servers lists origin servers. The key is a domain
+                      or IP.
                     type: object
                   sni_hostname:
+                    description: |-
+                      sniHostname overrides the name used for origin certificate verification and SNI.
+                      It requires https to be true.
                     type: string
                   ssl_verify:
+                    description: sslVerify checks the origin certificate. It requires
+                      https to be true.
                     type: boolean
                 type: object
               packaging:
-                description: ResourcePackaging is video conversion.
+                description: packaging converts video for delivery.
                 properties:
                   mp4:
-                    description: PackagingMP4 converts MP4 output.
+                    description: mp4 holds MPEG-4 conversion parameters.
                     properties:
                       output_protocols:
+                        description: outputProtocols lists protocols used to deliver
+                          the converted video.
                         items:
                           description: OutputProtocol is a packaged video protocol.
                           enum:
@@ -886,46 +1164,58 @@ spec:
                   The operator writes the created UUID to status.id and does not fill this field.
                 type: string
               return:
-                description: ResourceReturn forces a response.
+                description: return forces a response instead of origin content.
                 properties:
                   body:
+                    description: body is the forced response body.
                     type: string
                   http_status_code:
+                    description: httpStatusCode is the forced HTTP status code.
                     format: int32
                     maximum: 599
                     minimum: 100
                     type: integer
                   url:
+                    description: url is an absolute redirect URL for status codes
+                      301, 302, 303, 307, and 308.
                     type: string
                 type: object
               rewrite:
+                description: rewrite rewrites request paths.
                 items:
                   description: ResourceRewrite rewrites the request path.
                   properties:
                     flag:
-                      description: RewriteFlag stops further rewrite processing.
+                      description: flag stops further rewrite processing. The only
+                        value is break.
                       enum:
                       - break
                       type: string
                     from:
+                      description: from is the regular expression matched against
+                        the source URL.
                       type: string
                     scope:
-                      description: RewriteScope is where a rewrite runs.
+                      description: scope runs the rewrite on edge nodes or on shielding
+                        nodes.
                       enum:
                       - edge
                       - shield
                       type: string
                     to:
+                      description: to is the target address for the rewritten request.
                       type: string
                   type: object
                 type: array
               robots:
-                description: ResourceRobots controls robots.txt.
+                description: robots controls robots.txt.
                 properties:
                   robotsContent:
+                    description: robotsContent is the robots.txt body. It is used
+                      only when type is custom.
                     type: string
                   type:
-                    description: RobotsType controls robots.txt handling.
+                    description: type is deny, custom, or cached.
                     enum:
                     - deny
                     - custom
@@ -933,11 +1223,14 @@ spec:
                     type: string
                 type: object
               slice_size_megabytes:
+                description: sliceSizeMegabytes is the slice size in megabytes. It
+                  applies only when tuning is large.
                 format: int32
                 maximum: 1024
                 minimum: 1
                 type: integer
               ssl_protocols:
+                description: sslProtocols lists allowed TLS versions.
                 items:
                   description: SSLProtocol is a TLS version the CDN edge may use.
                   enum:
@@ -949,15 +1242,19 @@ spec:
                   type: string
                 type: array
               strong_ssl_ciphers:
+                description: strongSslCiphers uses strong SSL ciphers. It requires
+                  modernTlsOnly.
                 type: boolean
               tuning:
-                description: Tuning selects distribution optimization.
+                description: 'tuning selects distribution optimization: default, large,
+                  or live.'
                 enum:
                 - default
                 - large
                 - live
                 type: string
               use_http3:
+                description: useHttp3 enables HTTP/3.
                 type: boolean
             required:
             - projectRef

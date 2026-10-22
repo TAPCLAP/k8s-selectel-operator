@@ -129,28 +129,35 @@ type OutputProtocol string
 
 // AWSAuth holds origin credentials for AWS-style authorization.
 type AWSAuth struct {
+	// accessKey is the AWS access key identifier.
 	// +optional
 	AccessKey *string `json:"access_key,omitempty"`
+	// secretKey is the AWS secret access key.
 	// +optional
 	SecretKey *string `json:"secret_key,omitempty"`
 }
 
 // OriginAWS is AWS authorization for origin requests.
 type OriginAWS struct {
+	// auth holds the AWS authorization keys.
 	// +optional
 	Auth *AWSAuth `json:"auth,omitempty"`
 }
 
 // OriginServer is one origin behind a domain or IP key.
 type OriginServer struct {
+	// backup marks this origin as a backup.
 	// +optional
 	Backup *bool `json:"backup,omitempty"`
+	// maxFails is the number of failed attempts used for load balancing.
 	// +optional
 	MaxFails *int32 `json:"max_fails,omitempty"`
+	// port is the origin port. Selectel uses 80 without origin HTTPS and 443 with it.
 	// +kubebuilder:validation:Minimum=1
 	// +kubebuilder:validation:Maximum=65535
 	// +optional
 	Port *int32 `json:"port,omitempty"`
+	// weight is the load-balancing weight.
 	// +kubebuilder:validation:Minimum=1
 	// +optional
 	Weight *int32 `json:"weight,omitempty"`
@@ -158,288 +165,386 @@ type OriginServer struct {
 
 // Origin is the content source.
 type Origin struct {
+	// aws is AWS authorization for origin requests.
 	// +optional
 	AWS *OriginAWS `json:"aws,omitempty"`
+	// connectTimeout is the connect timeout, for example 5s.
 	// +optional
 	ConnectTimeout *string `json:"connect_timeout,omitempty"`
+	// forwardHostHeader sends the Host header from the CDN request to the origin.
+	// It cannot be set together with hostname.
 	// +optional
 	ForwardHostHeader *bool `json:"forward_host_header,omitempty"`
+	// hostname is the Host header sent to the origin.
+	// It cannot be set together with forwardHostHeader.
 	// +optional
 	Hostname *string `json:"hostname,omitempty"`
+	// https uses HTTPS when the CDN contacts the origin.
 	// +optional
 	HTTPS *bool `json:"https,omitempty"`
+	// readTimeout is the read timeout, for example 10s.
 	// +optional
 	ReadTimeout *string `json:"read_timeout,omitempty"`
+	// s3Bucket is the allowed bucket when the origin is a shared S3 domain.
 	// +optional
 	S3Bucket *string `json:"s3_bucket,omitempty"`
+	// sendTimeout is the send timeout, for example 10s.
 	// +optional
 	SendTimeout *string `json:"send_timeout,omitempty"`
+	// servers lists origin servers. The key is a domain or IP.
 	// +optional
 	Servers map[string]OriginServer `json:"servers,omitempty"`
+	// sniHostname overrides the name used for origin certificate verification and SNI.
+	// It requires https to be true.
 	// +optional
 	SNIHostname *string `json:"sni_hostname,omitempty"`
+	// sslVerify checks the origin certificate. It requires https to be true.
 	// +optional
 	SSLVerify *bool `json:"ssl_verify,omitempty"`
 }
 
 // AuthMD5 is signature authorization.
 type AuthMD5 struct {
+	// anywhere ignores the client IP address in the signature.
 	// +optional
 	Anywhere *bool `json:"anywhere,omitempty"`
+	// forever applies no time limit to the signature.
 	// +optional
 	Forever *bool `json:"forever,omitempty"`
+	// secret is the signature secret word.
 	// +optional
 	Secret *string `json:"secret,omitempty"`
 }
 
 // ResourceAuth is request authorization.
 type ResourceAuth struct {
+	// forbidden denies access when true.
 	// +optional
 	Forbidden *bool `json:"forbidden,omitempty"`
+	// md5 is local signature authorization.
 	// +optional
 	MD5 *AuthMD5 `json:"md5,omitempty"`
+	// url is the URL of an external authorization script.
 	// +optional
 	URL *string `json:"url,omitempty"`
 }
 
 // CacheValid is cache lifetime per status class. Values match ^(\d+)[smhd]$.
 type CacheValid struct {
+	// 2xx is how long successful responses stay in the CDN cache.
 	// +optional
 	XX2 *string `json:"2xx,omitempty"`
+	// 3xx is how long redirects stay in the CDN cache.
 	// +optional
 	XX3 *string `json:"3xx,omitempty"`
+	// 4xx is how long client errors stay in the CDN cache.
 	// +optional
 	XX4 *string `json:"4xx,omitempty"`
+	// 5xx is how long server errors stay in the CDN cache.
 	// +optional
 	XX5 *string `json:"5xx,omitempty"`
+	// browser is how long a browser may cache the response after receiving it from the CDN.
 	// +optional
 	Browser *string `json:"browser,omitempty"`
+	// force makes the CDN ignore Cache-Control and Expires from the origin.
 	// +optional
 	Force *bool `json:"force,omitempty"`
 }
 
 // ResourceCache is cache behavior.
 type ResourceCache struct {
+	// argsBlacklist lists query parameters ignored when caching. It requires considerArgs.
 	// +optional
 	ArgsBlacklist []string `json:"args_blacklist,omitempty"`
+	// argsWhitelist lists query parameters considered when caching. It requires considerArgs.
 	// +optional
 	ArgsWhitelist []string `json:"args_whitelist,omitempty"`
+	// considerArgs includes the query string in the cache key.
 	// +optional
 	ConsiderArgs *bool `json:"consider_args,omitempty"`
+	// considerCookies includes cookies in the cache key.
 	// +optional
 	ConsiderCookies *bool `json:"consider_cookies,omitempty"`
+	// cookiesBlacklist lists cookies ignored when caching. It requires considerCookies.
 	// +optional
 	CookiesBlacklist []string `json:"cookies_blacklist,omitempty"`
+	// cookiesWhitelist lists cookies considered when caching. It requires considerCookies.
 	// +optional
 	CookiesWhitelist []string `json:"cookies_whitelist,omitempty"`
+	// disable turns caching off when true.
 	// +optional
 	Disable *bool `json:"disable,omitempty"`
+	// staleConditions lists when the last cached copy is served. It requires useStale.
 	// +optional
 	StaleConditions []StaleCondition `json:"stale_conditions,omitempty"`
+	// useStale serves the last cached copy when the origin is unavailable.
 	// +optional
 	UseStale *bool `json:"use_stale,omitempty"`
+	// valid is the cache time for each response class.
 	// +optional
 	Valid *CacheValid `json:"valid,omitempty"`
 }
 
 // ResourceCompress is compression.
 type ResourceCompress struct {
+	// brotli compresses responses with Brotli.
 	// +optional
 	Brotli *bool `json:"brotli,omitempty"`
+	// gzip compresses responses with Gzip.
 	// +optional
 	Gzip *bool `json:"gzip,omitempty"`
 }
 
 // ResourceCORS is CORS behavior.
 type ResourceCORS struct {
+	// always adds Access-Control-Allow-Origin for every status code.
+	// False adds it only for specific status codes.
 	// +optional
 	Always *bool `json:"always,omitempty"`
+	// credentials sets Access-Control-Allow-Credentials.
 	// +optional
 	Credentials *bool `json:"credentials,omitempty"`
+	// disable turns CORS off when true.
 	// +optional
 	Disable *bool `json:"disable,omitempty"`
+	// domains lists allowed origins.
 	// +optional
 	Domains []string `json:"domains,omitempty"`
+	// expose lists headers available to the top-level API.
 	// +optional
 	Expose []string `json:"expose,omitempty"`
+	// headers lists safe request headers.
 	// +optional
 	Headers []string `json:"headers,omitempty"`
+	// maxAge is the preflight response lifetime in seconds.
 	// +optional
 	MaxAge *int32 `json:"max_age,omitempty"`
+	// methods lists safe HTTP methods.
 	// +optional
 	Methods []string `json:"methods,omitempty"`
 }
 
 // ResourceHeaders adds or hides headers.
 type ResourceHeaders struct {
+	// hideInResponse lists origin headers the CDN omits from the client response.
 	// +optional
 	HideInResponse []string `json:"hide_in_response,omitempty"`
+	// request adds headers to origin requests. The key is the header name.
 	// +optional
 	Request map[string]string `json:"request,omitempty"`
+	// response adds headers to client responses. The key is the header name.
 	// +optional
 	Response map[string]string `json:"response,omitempty"`
 }
 
 // LimitationTime bounds a restriction.
 type LimitationTime struct {
+	// end is the end of the interval in ISO 8601.
 	// +optional
 	End *string `json:"end,omitempty"`
+	// start is the start of the interval in ISO 8601.
 	// +optional
 	Start *string `json:"start,omitempty"`
 }
 
 // GeoExclude is a geographic exception.
 type GeoExclude struct {
+	// action is allow or deny for this exception.
 	// +optional
 	Action *AccessAction `json:"action,omitempty"`
+	// country is an ISO 3166-1 alpha-2 country code.
 	// +optional
 	Country *string `json:"country,omitempty"`
+	// region is an ISO 3166-2 region code.
 	// +optional
 	Region *string `json:"region,omitempty"`
 }
 
 // GeoLimitation restricts distribution by country.
 type GeoLimitation struct {
+	// defaultAction is allow or deny when no exception matches.
 	// +optional
 	DefaultAction *AccessAction `json:"default_action,omitempty"`
+	// exclude lists geographic exceptions.
 	// +optional
 	Exclude []GeoExclude `json:"exclude,omitempty"`
+	// times limits when this restriction applies.
 	// +optional
 	Times []LimitationTime `json:"times,omitempty"`
 }
 
 // IPExclude is an IP exception.
 type IPExclude struct {
+	// ip is an address in CIDR notation.
 	// +optional
 	IP *string `json:"ip,omitempty"`
 }
 
 // IPLimitation restricts distribution by IP.
 type IPLimitation struct {
+	// defaultAction is allow or deny when no exception matches.
 	// +optional
 	DefaultAction *AccessAction `json:"default_action,omitempty"`
+	// exclude lists IP exceptions.
 	// +optional
 	Exclude []IPExclude `json:"exclude,omitempty"`
+	// times limits when this restriction applies.
 	// +optional
 	Times []LimitationTime `json:"times,omitempty"`
 }
 
 // RefererExclude is a Referer exception.
 type RefererExclude struct {
+	// referer is a domain name or regular expression.
 	// +optional
 	Referer *string `json:"referer,omitempty"`
 }
 
 // RefererLimitation restricts distribution by Referer.
 type RefererLimitation struct {
+	// defaultAction is allow or deny when no exception matches.
 	// +optional
 	DefaultAction *AccessAction `json:"default_action,omitempty"`
+	// exclude lists Referer exceptions.
 	// +optional
 	Exclude []RefererExclude `json:"exclude,omitempty"`
+	// times limits when this restriction applies.
 	// +optional
 	Times []LimitationTime `json:"times,omitempty"`
 }
 
 // UserAgentExclude is a User-Agent exception.
 type UserAgentExclude struct {
+	// userAgent is a User-Agent value or regular expression.
 	// +optional
 	UserAgent *string `json:"useragent,omitempty"`
 }
 
 // UserAgentLimitation restricts distribution by User-Agent.
 type UserAgentLimitation struct {
+	// defaultAction is allow or deny when no exception matches.
 	// +optional
 	DefaultAction *AccessAction `json:"default_action,omitempty"`
+	// exclude lists User-Agent exceptions.
 	// +optional
 	Exclude []UserAgentExclude `json:"exclude,omitempty"`
+	// times limits when this restriction applies.
 	// +optional
 	Times []LimitationTime `json:"times,omitempty"`
 }
 
 // ResourceLimitations groups distribution restrictions.
 type ResourceLimitations struct {
+	// geo restricts distribution by country.
 	// +optional
 	Geo []GeoLimitation `json:"geo,omitempty"`
+	// ip restricts distribution by IP address.
 	// +optional
 	IP []IPLimitation `json:"ip,omitempty"`
+	// referer restricts distribution by Referer.
 	// +optional
 	Referer []RefererLimitation `json:"referer,omitempty"`
+	// userAgent restricts distribution by User-Agent.
 	// +optional
 	UserAgent []UserAgentLimitation `json:"useragent,omitempty"`
 }
 
 // PackagingMP4 converts MP4 output.
 type PackagingMP4 struct {
+	// outputProtocols lists protocols used to deliver the converted video.
 	// +optional
 	OutputProtocols []OutputProtocol `json:"output_protocols,omitempty"`
 }
 
 // ResourcePackaging is video conversion.
 type ResourcePackaging struct {
+	// mp4 holds MPEG-4 conversion parameters.
 	// +optional
 	MP4 *PackagingMP4 `json:"mp4,omitempty"`
 }
 
 // ResourceReturn forces a response.
 type ResourceReturn struct {
+	// body is the forced response body.
 	// +optional
 	Body *string `json:"body,omitempty"`
+	// httpStatusCode is the forced HTTP status code.
 	// +kubebuilder:validation:Minimum=100
 	// +kubebuilder:validation:Maximum=599
 	// +optional
 	HTTPStatusCode *int32 `json:"http_status_code,omitempty"`
+	// url is an absolute redirect URL for status codes 301, 302, 303, 307, and 308.
 	// +optional
 	URL *string `json:"url,omitempty"`
 }
 
 // ResourceRewrite rewrites the request path.
 type ResourceRewrite struct {
+	// flag stops further rewrite processing. The only value is break.
 	// +optional
 	Flag *RewriteFlag `json:"flag,omitempty"`
+	// from is the regular expression matched against the source URL.
 	// +optional
 	From *string `json:"from,omitempty"`
+	// scope runs the rewrite on edge nodes or on shielding nodes.
 	// +optional
 	Scope *RewriteScope `json:"scope,omitempty"`
+	// to is the target address for the rewritten request.
 	// +optional
 	To *string `json:"to,omitempty"`
 }
 
 // ResourceRobots controls robots.txt.
 type ResourceRobots struct {
+	// robotsContent is the robots.txt body. It is used only when type is custom.
 	// +optional
 	RobotsContent *string `json:"robotsContent,omitempty"`
+	// type is deny, custom, or cached.
 	// +optional
 	Type *RobotsType `json:"type,omitempty"`
 }
 
 // ResourceLocation is path-specific configuration.
 type ResourceLocation struct {
+	// allowedHttpMethods lists extra methods for this path. GET, HEAD, and OPTIONS are always allowed.
 	// +optional
 	AllowedHTTPMethods []HTTPMethod `json:"allowed_http_methods,omitempty"`
+	// auth is request authorization for this path.
 	// +optional
 	Auth *ResourceAuth `json:"auth,omitempty"`
+	// cache is cache behavior for this path.
 	// +optional
 	Cache *ResourceCache `json:"cache,omitempty"`
+	// compress is compression for this path.
 	// +optional
 	Compress *ResourceCompress `json:"compress,omitempty"`
+	// cors is CORS behavior for this path.
 	// +optional
 	CORS *ResourceCORS `json:"cors,omitempty"`
+	// headers adds or hides headers for this path.
 	// +optional
 	Headers *ResourceHeaders `json:"headers,omitempty"`
+	// ioss enables image optimization for this path.
 	// +optional
 	IOSS *bool `json:"ioss,omitempty"`
+	// limitations restricts distribution for this path.
 	// +optional
 	Limitations *ResourceLimitations `json:"limitations,omitempty"`
+	// order is the regular-expression check order for this location.
 	// +kubebuilder:validation:Minimum=1
 	// +kubebuilder:validation:Maximum=999999
 	// +optional
 	Order *int32 `json:"order,omitempty"`
+	// origin is the content source for this path.
 	// +optional
 	Origin *Origin `json:"origin,omitempty"`
+	// packaging is video conversion for this path.
 	// +optional
 	Packaging *ResourcePackaging `json:"packaging,omitempty"`
+	// return forces a response for this path.
 	// +optional
 	Return *ResourceReturn `json:"return,omitempty"`
+	// rewrite rewrites the request path.
 	// +optional
 	Rewrite []ResourceRewrite `json:"rewrite,omitempty"`
 }
@@ -475,32 +580,46 @@ type ResourceSpec struct {
 	// +optional
 	Certificate *CertificateSource `json:"certificate,omitempty"`
 
+	// active enables the CDN resource.
 	// +optional
 	Active *bool `json:"active,omitempty"`
+	// allowedHttpMethods lists extra methods. GET, HEAD, and OPTIONS are always allowed.
 	// +optional
 	AllowedHTTPMethods []HTTPMethod `json:"allowed_http_methods,omitempty"`
+	// auth is request authorization.
 	// +optional
 	Auth *ResourceAuth `json:"auth,omitempty"`
+	// cache is CDN cache behavior.
 	// +optional
 	Cache *ResourceCache `json:"cache,omitempty"`
+	// compress is response compression.
 	// +optional
 	Compress *ResourceCompress `json:"compress,omitempty"`
+	// cors is CORS behavior.
 	// +optional
 	CORS *ResourceCORS `json:"cors,omitempty"`
+	// followRedirects follows redirects from the origin.
 	// +optional
 	FollowRedirects *bool `json:"follow_redirects,omitempty"`
+	// headers adds or hides request and response headers.
 	// +optional
 	Headers *ResourceHeaders `json:"headers,omitempty"`
+	// http2https redirects HTTP requests to HTTPS.
 	// +optional
 	HTTP2HTTPS *bool `json:"http2https,omitempty"`
+	// httpsOnly serves the resource over HTTPS only.
 	// +optional
 	HTTPSOnly *bool `json:"https_only,omitempty"`
+	// ioss enables image optimization and modification.
 	// +optional
 	IOSS *bool `json:"ioss,omitempty"`
+	// limitations restricts distribution by geography, IP, Referer, or User-Agent.
 	// +optional
 	Limitations *ResourceLimitations `json:"limitations,omitempty"`
+	// locations holds path-specific rules. The key is a path pattern such as /images or /video/*.
 	// +optional
 	Locations map[string]ResourceLocation `json:"locations,omitempty"`
+	// modernTlsOnly allows only modern TLS versions.
 	// +optional
 	ModernTLSOnly *bool `json:"modern_tls_only,omitempty"`
 	// name is the Selectel resource name. Empty means metadata.name.
@@ -509,30 +628,42 @@ type ResourceSpec struct {
 	// +kubebuilder:validation:Pattern=`^[a-zA-Zа-яА-ЯёЁ0-9\-_ ]{1,50}$`
 	// +optional
 	Name string `json:"name,omitempty"`
+	// names lists personal domains (CNAMEs) served by this CDN resource.
 	// +optional
 	Names []string `json:"names,omitempty"`
+	// noHttp2 disables HTTP/2.
 	// +optional
 	NoHTTP2 *bool `json:"no_http2,omitempty"`
+	// origin is the content source.
 	// +optional
 	Origin *Origin `json:"origin,omitempty"`
+	// packaging converts video for delivery.
 	// +optional
 	Packaging *ResourcePackaging `json:"packaging,omitempty"`
+	// return forces a response instead of origin content.
 	// +optional
 	Return *ResourceReturn `json:"return,omitempty"`
+	// rewrite rewrites request paths.
 	// +optional
 	Rewrite []ResourceRewrite `json:"rewrite,omitempty"`
+	// robots controls robots.txt.
 	// +optional
 	Robots *ResourceRobots `json:"robots,omitempty"`
+	// sliceSizeMegabytes is the slice size in megabytes. It applies only when tuning is large.
 	// +kubebuilder:validation:Minimum=1
 	// +kubebuilder:validation:Maximum=1024
 	// +optional
 	SliceSizeMegabytes *int32 `json:"slice_size_megabytes,omitempty"`
+	// sslProtocols lists allowed TLS versions.
 	// +optional
 	SSLProtocols []SSLProtocol `json:"ssl_protocols,omitempty"`
+	// strongSslCiphers uses strong SSL ciphers. It requires modernTlsOnly.
 	// +optional
 	StrongSSLCiphers *bool `json:"strong_ssl_ciphers,omitempty"`
+	// tuning selects distribution optimization: default, large, or live.
 	// +optional
 	Tuning *Tuning `json:"tuning,omitempty"`
+	// useHttp3 enables HTTP/3.
 	// +optional
 	UseHTTP3 *bool `json:"use_http3,omitempty"`
 }
