@@ -76,6 +76,11 @@ type ProjectSpec struct {
 	// +optional
 	AllowedNamespaces []NamespaceAccess `json:"allowedNamespaces,omitempty"`
 
+	// allowedDomains lists personal domains spec.names may use.
+	// An empty list allows any domain. A pattern is an exact name, a glob, or a /regex/.
+	// +optional
+	AllowedDomains []string `json:"allowedDomains,omitempty"`
+
 	// credentialsSecretRef is the Secret with accountId, username, password, and projectName.
 	// +required
 	CredentialsSecretRef SecretReference `json:"credentialsSecretRef"`

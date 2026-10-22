@@ -184,6 +184,8 @@ Seq должен быть в записи `allowedNamespaces`, которая п
 | `Processing` | False | Ожидание. Следующий reconcile через `--processing-interval` (по умолчанию 3 минуты) плюс случайные 0–30 секунд. Конфигурация не меняется. |
 | `NamespaceNotAllowed` | False | Namespace нет в `allowedNamespaces`. |
 | `CertificateNotAllowed` | False | `certificate.id` нет в записи namespace. |
+| `DomainNotAllowed` | False | Запись `spec.names` не совпала ни с одним шаблоном `allowedDomains`. |
+| `DomainPatternInvalid` | False | Шаблон `allowedDomains` не компилируется. |
 | `ProjectNotFound` | False | `projectRef` не существует. |
 | `ProjectNotReady` | False | Project ещё не может выпустить токен. |
 | `SecretNamespaceForbidden` | False | Secret проекта лежит вне namespace оператора. |
@@ -201,7 +203,7 @@ Seq должен быть в записи `allowedNamespaces`, которая п
 
 1. Если Resource удаляется и `managementPolicy` равен `Manage`, выполняется deletion policy, даже когда namespace или сертификат уже не разрешены. `Observe` только снимает finalizer. См. [deletion.md](deletion.md).
 2. Находится Project. Если его нет или он не Ready, CDN API не вызывается.
-3. Namespace или сертификат отклоняются, если так говорит список разрешений.
+3. Namespace, сертификат или персональный домен отклоняются, если так говорит список разрешений.
 4. Если `status.id` пуст и задан `spec.resourceID`, выполняется `GET` этого id, и он сохраняется. HTTP 404 ставит `AdoptFailed` для этого generation.
 5. Если id всё ещё нет, выполняется `GET /resources` и поиск по `spec.name`, включая неактивные ресурсы. Совпадение связывается. `Manage` шлёт `POST /resources`, если совпадения нет. `Observe` ставит `WouldCreate` и повторяет попытку.
 6. При `status: accept` сразу записываются `id`, `cdnDomain` и `taskID`. Создание с ответом `error` ставит `CreateRejected` для этого generation.

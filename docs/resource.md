@@ -184,6 +184,8 @@ The API body receives the integer as `certificate`. The operator does not upload
 | `Processing` | False | Waiting. Reconcile again after `--processing-interval` (default 3 minutes) plus a random 0–30 seconds. Configuration is not changed. |
 | `NamespaceNotAllowed` | False | Namespace is not in `allowedNamespaces`. |
 | `CertificateNotAllowed` | False | `certificate.id` is not on the namespace entry. |
+| `DomainNotAllowed` | False | A `spec.names` entry matches no `allowedDomains` pattern. |
+| `DomainPatternInvalid` | False | An `allowedDomains` pattern cannot be compiled. |
 | `ProjectNotFound` | False | `projectRef` does not exist. |
 | `ProjectNotReady` | False | Project cannot issue a token yet. |
 | `SecretNamespaceForbidden` | False | Project Secret is outside the operator namespace. |
@@ -201,7 +203,7 @@ The API body receives the integer as `certificate`. The operator does not upload
 
 1. If the Resource is being deleted and `managementPolicy` is `Manage`, run the deletion policy even when the namespace or certificate is no longer allowed. `Observe` only removes the finalizer. See [deletion.md](deletion.md).
 2. Resolve the Project. A missing or unready Project leaves the CDN API untouched.
-3. Reject the namespace or certificate when the allowlist says so.
+3. Reject the namespace, certificate, or personal domain when the allowlist says so.
 4. If `status.id` is empty and `spec.resourceID` is set, `GET` that id and store it. HTTP 404 sets `AdoptFailed` for this generation.
 5. If there is still no id, `GET /resources` and look for `spec.name`, including inactive resources. A match is linked. `Manage` sends `POST /resources` when nothing matches. `Observe` sets `WouldCreate` and tries again.
 6. On `status: accept`, write `id`, `cdnDomain`, and `taskID` immediately. A create that returns `error` sets `CreateRejected` for this generation.

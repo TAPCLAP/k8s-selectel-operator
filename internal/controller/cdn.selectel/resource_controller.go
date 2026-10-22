@@ -54,6 +54,8 @@ const (
 	reasonSecretNotFound           = "SecretNotFound"
 	reasonSecretInvalid            = "SecretInvalid"
 	reasonInvalidName              = "InvalidName"
+	reasonDomainNotAllowed         = "DomainNotAllowed"
+	reasonDomainPatternInvalid     = "DomainPatternInvalid"
 	reasonCreateRejected           = "CreateRejected"
 	reasonAdoptFailed              = "AdoptFailed"
 	reasonWouldCreate              = "WouldCreate"
@@ -186,6 +188,14 @@ func (r *ResourceReconciler) authorizedProject(ctx context.Context, resource *cd
 	if ready == nil || ready.Status != metav1.ConditionTrue {
 		result, err := r.fail(ctx, resource, cdnv1alpha1.PhasePending, reasonProjectNotReady, "Project is not ready", requeueDenied)
 		return nil, result, err
+	}
+	if err := access.AllowsDomains(project.Spec.AllowedDomains, resource.Spec.Names); err != nil {
+		reason := reasonDomainNotAllowed
+		if access.IsPatternError(err) {
+			reason = reasonDomainPatternInvalid
+		}
+		result, statusErr := r.fail(ctx, resource, cdnv1alpha1.PhasePending, reason, err.Error(), requeueDenied)
+		return nil, result, statusErr
 	}
 	return &project, ctrl.Result{}, nil
 }

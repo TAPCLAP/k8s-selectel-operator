@@ -47,6 +47,13 @@ spec:
           spec:
             description: spec defines the desired state of Project
             properties:
+              allowedDomains:
+                description: |-
+                  allowedDomains lists personal domains spec.names may use.
+                  An empty list allows any domain. A pattern is an exact name, a glob, or a /regex/.
+                items:
+                  type: string
+                type: array
               allowedNamespaces:
                 description: |-
                   allowedNamespaces lists namespaces that may reference this Project.

@@ -429,6 +429,26 @@ var _ = Describe("Resource controller", func() {
 		Expect(apierrors.IsNotFound(err)).To(BeTrue())
 	})
 
+	It("rejects spec.names outside allowedDomains", func() {
+		var project selectelv1alpha1.Project
+		Expect(k8sClient.Get(ctx, types.NamespacedName{Name: "production"}, &project)).To(Succeed())
+		project.Spec.AllowedDomains = []string{"*.g.tapclap.com"}
+		Expect(k8sClient.Update(ctx, &project)).To(Succeed())
+
+		res := resourceSpec("named", nil)
+		res.Spec.Names = []string{"other.example.com"}
+		Expect(k8sClient.Create(ctx, res)).To(Succeed())
+		runReconcile("named")
+		Expect(fake.posts).To(Equal(0))
+		Expect(condition("named").Reason).To(Equal(reasonDomainNotAllowed))
+
+		fresh := getResource("named")
+		fresh.Spec.Names = []string{"debug-cdn.g.tapclap.com"}
+		Expect(k8sClient.Update(ctx, &fresh)).To(Succeed())
+		runReconcile("named")
+		Expect(fake.posts).To(Equal(1))
+	})
+
 	It("refuses a certificate outside the namespace allowlist and allows a resource without one", func() {
 		denied := int32(99)
 		res := resourceSpec("denied", nil)

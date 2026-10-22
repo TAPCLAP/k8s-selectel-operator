@@ -129,6 +129,11 @@ func (in *ProjectSpec) DeepCopyInto(out *ProjectSpec) {
 			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
 	}
+	if in.AllowedDomains != nil {
+		in, out := &in.AllowedDomains, &out.AllowedDomains
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
 	out.CredentialsSecretRef = in.CredentialsSecretRef
 }
 

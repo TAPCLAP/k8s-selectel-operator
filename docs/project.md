@@ -94,6 +94,19 @@ The operator does not call `GET /certificate` to check that the sequence exists.
 
 Taking an id off the list does not detach a certificate already bound in Selectel. The next desired update that still sets that id is rejected. An update that omits `certificate` is a normal spec change and is sent when the namespace itself is still allowed.
 
+## Personal domains
+
+`spec.allowedDomains` limits `spec.names` on CDN resources that use this Project. An empty list, or an omitted field, allows any personal domain. A non-empty list requires every name to match at least one pattern. The assigned `*.selcdn.net` domain is not part of this check.
+
+| Pattern | Match |
+| --- | --- |
+| `cdn.example.com` | That domain only. Comparison ignores case. |
+| `*.example.com` | One label, such as `cdn.example.com`. `a.b.example.com` does not match. `*` stays inside a label, and `?` is one character inside a label. |
+| `**.example.com` | Any prefix, including dots, such as `a.b.example.com`. |
+| `/^cdn\..+\.example\.com$/` | A Go regular expression matched against the whole domain. The pattern is wrapped in `/`. It is case-sensitive. |
+
+A name that matches nothing sets `Ready=False`, reason `DomainNotAllowed`, and no create or update is sent. A pattern that cannot be compiled sets `DomainPatternInvalid`. Deleting the custom resource still runs the deletion policy.
+
 ## Status
 
 `kubectl get projects` prints the `Ready` condition.
