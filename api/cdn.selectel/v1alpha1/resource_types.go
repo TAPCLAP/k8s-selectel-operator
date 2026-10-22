@@ -678,6 +678,15 @@ type ResourceStatus struct {
 	// +optional
 	CDNDomain string `json:"cdnDomain,omitempty"`
 
+	// cdnDomains lists the assigned CDN domain and the personal domains from spec.names.
+	// The assigned domain is first. Duplicates are omitted. Empty when neither is set.
+	// +optional
+	CDNDomains []string `json:"cdnDomains,omitempty"`
+
+	// origins lists origin hostnames from spec.origin.servers.
+	// +optional
+	Origins []string `json:"origins,omitempty"`
+
 	// creationTimestamp is when Selectel created the resource.
 	// +optional
 	CreationTimestamp *metav1.Time `json:"creationTimestamp,omitempty"`
@@ -705,8 +714,8 @@ type ResourceStatus struct {
 // +kubebuilder:subresource:status
 // +kubebuilder:printcolumn:name="Phase",type=string,JSONPath=`.status.phase`
 // +kubebuilder:printcolumn:name="Policy",type=string,JSONPath=`.spec.managementPolicy`
-// +kubebuilder:printcolumn:name="Domain",type=string,JSONPath=`.status.cdnDomain`
-// +kubebuilder:printcolumn:name="Names",type=string,JSONPath=`.spec.names`,description="Personal domains from spec.names"
+// +kubebuilder:printcolumn:name="Origin",type=string,JSONPath=`.status.origins`,description="Origin hostnames from spec.origin.servers"
+// +kubebuilder:printcolumn:name="CDN Domains",type=string,JSONPath=`.status.cdnDomains`,description="Assigned CDN domain followed by spec.names"
 // +kubebuilder:printcolumn:name="Age",type=date,JSONPath=`.metadata.creationTimestamp`
 
 // Resource is a Selectel CDN resource.

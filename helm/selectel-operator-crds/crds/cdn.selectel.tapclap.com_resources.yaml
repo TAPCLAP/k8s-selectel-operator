@@ -21,12 +21,13 @@ spec:
     - jsonPath: .spec.managementPolicy
       name: Policy
       type: string
-    - jsonPath: .status.cdnDomain
-      name: Domain
+    - description: Origin hostnames from spec.origin.servers
+      jsonPath: .status.origins
+      name: Origin
       type: string
-    - description: Personal domains from spec.names
-      jsonPath: .spec.names
-      name: Names
+    - description: Assigned CDN domain followed by spec.names
+      jsonPath: .status.cdnDomains
+      name: CDN Domains
       type: string
     - jsonPath: .metadata.creationTimestamp
       name: Age
@@ -1269,6 +1270,13 @@ spec:
               cdnDomain:
                 description: cdnDomain is the *.selcdn.net domain assigned by Selectel.
                 type: string
+              cdnDomains:
+                description: |-
+                  cdnDomains lists the assigned CDN domain and the personal domains from spec.names.
+                  The assigned domain is first. Duplicates are omitted. Empty when neither is set.
+                items:
+                  type: string
+                type: array
               conditions:
                 description: conditions represent the current state of the Resource.
                 items:
@@ -1356,6 +1364,11 @@ spec:
               id:
                 description: id is the Selectel resource UUID.
                 type: string
+              origins:
+                description: origins lists origin hostnames from spec.origin.servers.
+                items:
+                  type: string
+                type: array
               phase:
                 description: phase is Pending, Processing, Ready, Error, or Drift.
                 enum:

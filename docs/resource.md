@@ -28,7 +28,7 @@ spec:
 
 A resource that serves traffic needs `origin.servers` with at least one entry. Selectel assigns `status.cdnDomain` (`<id>.selcdn.net`) and `status.id` (a UUID). Those fields, and the creation time, are status only.
 
-`kubectl get resources` prints `Phase`, `Policy`, `Domain`, and `Names`. `Names` shows `spec.names` when personal domains are set.
+`kubectl get resources` prints `Phase`, `Policy`, `Origin`, and `CDN Domains`. `CDN Domains` is `status.cdnDomain` followed by `spec.names`. `Origin` is the hostnames from `spec.origin.servers`. Both cells are empty until the operator writes status.
 
 ## Operator fields
 
@@ -160,6 +160,8 @@ The API body receives the integer as `certificate`. The operator does not upload
 | --- | --- |
 | `id` | Selectel resource UUID. Recorded as soon as create is accepted, before the resource is ready. |
 | `cdnDomain` | Assigned `*.selcdn.net` domain. |
+| `cdnDomains` | `cdnDomain`, then `spec.names`, without duplicates. Printed by `kubectl get` as `CDN DOMAINS`. |
+| `origins` | Hostnames from `spec.origin.servers`, without ports or weights. Printed by `kubectl get` as `ORIGIN`. |
 | `creationTimestamp` | Selectel creation time (`creation_ts`). |
 | `phase` | `Pending`, `Processing`, `Ready`, `Error`, or `Drift`. |
 | `drift` | Spec fields that differ from Selectel. `Manage` records them when it sends an update. `Observe` records them and does not send the update. Empty when the spec matches. |

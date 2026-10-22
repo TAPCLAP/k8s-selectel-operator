@@ -28,7 +28,7 @@ spec:
 
 Ресурсу, который отдаёт трафик, нужен `origin.servers` хотя бы с одной записью. Selectel выдаёт `status.cdnDomain` (`<id>.selcdn.net`) и `status.id` (UUID). Эти поля и время создания есть только в status.
 
-`kubectl get resources` показывает `Phase`, `Policy`, `Domain` и `Names`. `Names` выводит `spec.names`, когда персональные домены заданы.
+`kubectl get resources` показывает `Phase`, `Policy`, `Origin` и `CDN Domains`. `CDN Domains` — это `status.cdnDomain`, затем `spec.names`. `Origin` — имена хостов из `spec.origin.servers`. Обе ячейки пустые, пока оператор не запишет status.
 
 ## Поля оператора
 
@@ -160,6 +160,8 @@ Seq должен быть в записи `allowedNamespaces`, которая п
 | --- | --- |
 | `id` | UUID ресурса Selectel. Записывается сразу после принятия создания, до готовности ресурса. |
 | `cdnDomain` | Выданный домен `*.selcdn.net`. |
+| `cdnDomains` | Сначала `cdnDomain`, затем `spec.names`, без повторов. `kubectl get` печатает это как `CDN DOMAINS`. |
+| `origins` | Имена хостов из `spec.origin.servers`, без портов и весов. `kubectl get` печатает это как `ORIGIN`. |
 | `creationTimestamp` | Время создания в Selectel (`creation_ts`). |
 | `phase` | `Pending`, `Processing`, `Ready`, `Error` или `Drift`. |
 | `drift` | Поля spec, которые отличаются от Selectel. `Manage` записывает их, когда отправляет обновление. `Observe` записывает их и обновление не отправляет. Пусто, когда spec совпадает. |

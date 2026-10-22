@@ -23,6 +23,7 @@ import (
 	"fmt"
 	"math/rand/v2"
 	"regexp"
+	"slices"
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
@@ -508,11 +509,63 @@ func (r *ResourceReconciler) finish(ctx context.Context, resource *cdnv1alpha1.R
 	phaseChanged := resource.Status.Phase != phase
 	resource.Status.Phase = phase
 	resource.Status.Drift = drift
+	columnsChanged := applyColumns(resource)
 	conditionChanged := setCondition(&resource.Status.Conditions, resource.Generation, cdnv1alpha1.ConditionReady, status, reason, message)
-	if !phaseChanged && !conditionChanged && !driftChanged {
+	if !phaseChanged && !conditionChanged && !driftChanged && !columnsChanged {
 		return nil
 	}
 	return r.Status().Update(ctx, resource)
+}
+
+func applyColumns(resource *cdnv1alpha1.Resource) bool {
+	domains := cdnDomainColumn(resource)
+	origins := originColumn(resource)
+	changed := !sameStrings(resource.Status.CDNDomains, domains) || !sameStrings(resource.Status.Origins, origins)
+	resource.Status.CDNDomains = domains
+	resource.Status.Origins = origins
+	return changed
+}
+
+func cdnDomainColumn(resource *cdnv1alpha1.Resource) []string {
+	seen := map[string]struct{}{}
+	var domains []string
+	add := func(name string) {
+		if name == "" {
+			return
+		}
+		if _, ok := seen[name]; ok {
+			return
+		}
+		seen[name] = struct{}{}
+		domains = append(domains, name)
+	}
+	add(resource.Status.CDNDomain)
+	for _, name := range resource.Spec.Names {
+		add(name)
+	}
+	return domains
+}
+
+func originColumn(resource *cdnv1alpha1.Resource) []string {
+	if resource.Spec.Origin == nil || len(resource.Spec.Origin.Servers) == 0 {
+		return nil
+	}
+	hosts := make([]string, 0, len(resource.Spec.Origin.Servers))
+	for host := range resource.Spec.Origin.Servers {
+		if host == "" {
+			continue
+		}
+		hosts = append(hosts, host)
+	}
+	slices.Sort(hosts)
+	if len(hosts) == 0 {
+		return nil
+	}
+	return hosts
+}
+
+func sameStrings(left, right []string) bool {
+	return slices.Equal(left, right)
 }
 
 func sameDrift(left, right []cdnv1alpha1.FieldDrift) bool {
