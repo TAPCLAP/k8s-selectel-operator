@@ -49,6 +49,55 @@ Top-level configuration fields: `active`, `allowed_http_methods`, `auth`, `cache
 
 Booleans and integers are optional so an explicit `false` or `0` is sent. Fields left unset are omitted. The controller compares the desired document with the API response and ignores extra keys the API adds as defaults, so server defaults do not cause a permanent update loop.
 
+## Example
+
+This resource serves only HTTPS on `cdn.example.com`, redirects HTTP to HTTPS, and disables HTTP/2. The origin is contacted over HTTPS. `origin.hostname` is the `Host` header sent to the origin, and `origin.sni_hostname` is the name used for SNI and origin certificate verification. `sni_hostname` requires `origin.https: true`. `hostname` cannot be set together with `origin.forward_host_header`.
+
+`certificate.id` is the Selectel certificate sequence for the personal domain. The Project allowlist for this namespace must include that sequence. See [project.md](project.md).
+
+Cache durations use `^(\d+)[smhd]$`. `365d` is one year. `0s` stores the response for zero time. `cache.valid.force: true` makes the CDN use these durations and ignore `Cache-Control` and `Expires` from the origin. `cache.disable: false` turns cache settings on. `consider_args: false` keeps the query string out of the cache key. `use_stale` serves the last cached copy for the listed origin failures.
+
+```yaml
+apiVersion: cdn.selectel.tapclap.com/v1alpha1
+kind: Resource
+metadata:
+  name: static
+  namespace: media
+spec:
+  projectRef:
+    name: production
+  no_http2: true
+  https_only: true
+  http2https: true
+  names:
+    - cdn.example.com
+  certificate:
+    id: 1
+  origin:
+    https: true
+    hostname: origin.example.com
+    sni_hostname: origin.example.com
+    servers:
+      origin.example.com: {}
+  cache:
+    disable: false
+    consider_args: false
+    use_stale: true
+    stale_conditions:
+      - error
+      - timeout
+      - http_503
+      - http_502
+      - http_504
+    valid:
+      force: true
+      "2xx": 365d
+      "3xx": 0s
+      "4xx": 0s
+      "5xx": 0s
+      browser: 0s
+```
+
 ## Create without import
 
 Leave `spec.resourceID` empty. The operator does not fill it. With the default `managementPolicy: Manage`, the controller sends `POST /resources` and writes the UUID from the response to `status.id`. Later reconciles use `status.id` and do not create the resource again. The controller then `PUT`s until the spec matches.

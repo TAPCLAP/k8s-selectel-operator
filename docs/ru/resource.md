@@ -49,6 +49,55 @@ spec:
 
 Булевы значения и целые числа необязательны, поэтому явные `false` и `0` уходят в API. Незаданные поля опускаются. Контроллер сравнивает желаемый документ с ответом API и игнорирует лишние ключи, которые API добавляет как значения по умолчанию, чтобы серверные умолчания не вызывали бесконечный цикл обновлений.
 
+## Пример
+
+Этот ресурс отдаёт только HTTPS на `cdn.example.com`, перенаправляет HTTP на HTTPS и отключает HTTP/2. К источнику обращение идёт по HTTPS. `origin.hostname` — заголовок `Host`, который уходит источнику, а `origin.sni_hostname` — имя для SNI и проверки сертификата источника. Для `sni_hostname` нужно `origin.https: true`. `hostname` нельзя задавать вместе с `origin.forward_host_header`.
+
+`certificate.id` — seq сертификата Selectel для персонального домена. Этот seq должен быть в списке разрешений Project для данного namespace. См. [project.md](project.md).
+
+Срок кеша задаётся как `^(\d+)[smhd]$`. `365d` — один год. `0s` хранит ответ нулевое время. `cache.valid.force: true` заставляет CDN использовать эти сроки и игнорировать `Cache-Control` и `Expires` источника. `cache.disable: false` включает настройки кеширования. `consider_args: false` не включает query string в ключ кеша. `use_stale` отдаёт последнюю закешированную копию при перечисленных ошибках источника.
+
+```yaml
+apiVersion: cdn.selectel.tapclap.com/v1alpha1
+kind: Resource
+metadata:
+  name: static
+  namespace: media
+spec:
+  projectRef:
+    name: production
+  no_http2: true
+  https_only: true
+  http2https: true
+  names:
+    - cdn.example.com
+  certificate:
+    id: 1
+  origin:
+    https: true
+    hostname: origin.example.com
+    sni_hostname: origin.example.com
+    servers:
+      origin.example.com: {}
+  cache:
+    disable: false
+    consider_args: false
+    use_stale: true
+    stale_conditions:
+      - error
+      - timeout
+      - http_503
+      - http_502
+      - http_504
+    valid:
+      force: true
+      "2xx": 365d
+      "3xx": 0s
+      "4xx": 0s
+      "5xx": 0s
+      browser: 0s
+```
+
 ## Создание без импорта
 
 `spec.resourceID` остаётся пустым. Оператор его не заполняет. При политике по умолчанию `managementPolicy: Manage` контроллер шлёт `POST /resources` и записывает UUID из ответа в `status.id`. Дальше reconcile идёт по `status.id` и не создаёт ресурс повторно. Затем контроллер шлёт `PUT`, пока spec не совпадёт.
