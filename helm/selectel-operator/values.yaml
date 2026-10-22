@@ -18,9 +18,12 @@ serviceAccount:
 # Credential Secrets are read from the release namespace.
 leaderElection: true
 
-# Empty uses the operator default, https://api.selectel.ru/cdn/v3.
+# Empty baseURL uses the operator default, https://api.selectel.ru/cdn/v3.
+# processingInterval is the base wait while Selectel applies configuration.
+# The operator adds a random 0-30s.
 cdn:
   baseURL: ""
+  processingInterval: 3m
 
 metrics:
   enabled: true

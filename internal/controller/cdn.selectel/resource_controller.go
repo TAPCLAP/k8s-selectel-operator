@@ -21,6 +21,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math/rand/v2"
 	"regexp"
 	"time"
 
@@ -66,10 +67,11 @@ const (
 	reasonAuthFailed               = "AuthFailed"
 	reasonAPIError                 = "APIError"
 
-	requeueProcessing = 15 * time.Second
-	requeueReady      = 5 * time.Minute
-	requeueError      = time.Minute
-	requeueDenied     = time.Minute
+	defaultProcessingInterval = 3 * time.Minute
+	processingJitter          = 30 * time.Second
+	requeueReady              = 5 * time.Minute
+	requeueError              = time.Minute
+	requeueDenied             = time.Minute
 )
 
 var selectelName = regexp.MustCompile(`^[a-zA-Zа-яА-ЯёЁ0-9\-_ ]{1,50}$`)
@@ -82,6 +84,18 @@ type ResourceReconciler struct {
 	CredentialsNamespace string
 	Tokens               *iam.Cache
 	CDN                  *cdn.Client
+	// ProcessingInterval is the base wait before checking a resource again while
+	// Selectel applies configuration. Zero uses 3 minutes. The wait also adds a
+	// random 0-30s.
+	ProcessingInterval time.Duration
+}
+
+func (r *ResourceReconciler) processingDelay() time.Duration {
+	base := r.ProcessingInterval
+	if base <= 0 {
+		base = defaultProcessingInterval
+	}
+	return base + time.Duration(rand.Int64N(int64(processingJitter)+1))
 }
 
 // +kubebuilder:rbac:groups=cdn.selectel.tapclap.com,resources=resources,verbs=get;list;watch;create;update;patch;delete
@@ -277,7 +291,7 @@ func (r *ResourceReconciler) sync(ctx context.Context, project *selectelv1alpha1
 		if err := r.mark(ctx, resource, cdnv1alpha1.PhaseProcessing, metav1.ConditionFalse, reasonProcessing, message); err != nil {
 			return ctrl.Result{}, err
 		}
-		return ctrl.Result{RequeueAfter: requeueProcessing}, nil
+		return ctrl.Result{RequeueAfter: r.processingDelay()}, nil
 	case "Error":
 		actual, err := r.get(ctx, project, creds, resource.Status.ID)
 		if err != nil {
@@ -301,7 +315,7 @@ func (r *ResourceReconciler) sync(ctx context.Context, project *selectelv1alpha1
 			if err := r.mark(ctx, resource, cdnv1alpha1.PhaseProcessing, metav1.ConditionFalse, reasonProcessing, "configuration update submitted"); err != nil {
 				return ctrl.Result{}, err
 			}
-			return ctrl.Result{RequeueAfter: requeueProcessing}, nil
+			return ctrl.Result{RequeueAfter: r.processingDelay()}, nil
 		}
 		if observing(resource) {
 			return r.observe(ctx, resource, desired, actual)
@@ -337,7 +351,7 @@ func (r *ResourceReconciler) sync(ctx context.Context, project *selectelv1alpha1
 			if err := r.mark(ctx, resource, cdnv1alpha1.PhaseProcessing, metav1.ConditionFalse, reasonProcessing, "configuration update submitted"); err != nil {
 				return ctrl.Result{}, err
 			}
-			return ctrl.Result{RequeueAfter: requeueProcessing}, nil
+			return ctrl.Result{RequeueAfter: r.processingDelay()}, nil
 		}
 		if observing(resource) {
 			return r.observe(ctx, resource, desired, actual)
@@ -350,7 +364,7 @@ func (r *ResourceReconciler) sync(ctx context.Context, project *selectelv1alpha1
 		if err := r.mark(ctx, resource, cdnv1alpha1.PhaseProcessing, metav1.ConditionFalse, reasonProcessing, "waiting for a Selectel status"); err != nil {
 			return ctrl.Result{}, err
 		}
-		return ctrl.Result{RequeueAfter: requeueProcessing}, nil
+		return ctrl.Result{RequeueAfter: r.processingDelay()}, nil
 	}
 }
 

@@ -181,7 +181,7 @@ Seq должен быть в записи `allowedNamespaces`, которая п
 | `Drift` | False | `Observe` нашёл поля, которые обновил бы `Manage`. Они перечислены в `status.drift`. |
 | `WouldCreate` | False | `Observe` не нашёл ресурс Selectel. `Manage` отправил бы `POST`. Поиск повторяется примерно раз в минуту. |
 | `WouldRecreate` | False | Связанный ресурс Selectel исчез. `Observe` не создаёт его заново. |
-| `Processing` | False | Ожидание. Следующий reconcile примерно через 15 секунд. Конфигурация не меняется. |
+| `Processing` | False | Ожидание. Следующий reconcile через `--processing-interval` (по умолчанию 3 минуты) плюс случайные 0–30 секунд. Конфигурация не меняется. |
 | `NamespaceNotAllowed` | False | Namespace нет в `allowedNamespaces`. |
 | `CertificateNotAllowed` | False | `certificate.id` нет в записи namespace. |
 | `ProjectNotFound` | False | `projectRef` не существует. |

@@ -181,7 +181,7 @@ The API body receives the integer as `certificate`. The operator does not upload
 | `Drift` | False | `Observe` found fields `Manage` would update. Listed in `status.drift`. |
 | `WouldCreate` | False | `Observe` found no Selectel resource. `Manage` would send `POST`. The search repeats about once a minute. |
 | `WouldRecreate` | False | The linked Selectel resource is gone. `Observe` does not create it again. |
-| `Processing` | False | Waiting. Reconcile again in about 15 seconds. Configuration is not changed. |
+| `Processing` | False | Waiting. Reconcile again after `--processing-interval` (default 3 minutes) plus a random 0–30 seconds. Configuration is not changed. |
 | `NamespaceNotAllowed` | False | Namespace is not in `allowedNamespaces`. |
 | `CertificateNotAllowed` | False | `certificate.id` is not on the namespace entry. |
 | `ProjectNotFound` | False | `projectRef` does not exist. |

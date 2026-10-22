@@ -52,6 +52,7 @@ spec:
             {{- with .Values.cdn.baseURL }}
             - --cdn-base-url={{ . }}
             {{- end }}
+            - --processing-interval={{ .Values.cdn.processingInterval | default "3m" }}
           env:
             - name: CREDENTIALS_NAMESPACE
               valueFrom:

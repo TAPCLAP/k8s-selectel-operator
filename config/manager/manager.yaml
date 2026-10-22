@@ -64,6 +64,7 @@ spec:
           - --leader-elect
           - --health-probe-bind-address=:8081
           - --credentials-namespace=selectel-infra
+          - --processing-interval=3m
         image: controller:latest
         name: manager
         ports:

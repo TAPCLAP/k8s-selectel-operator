@@ -20,6 +20,7 @@ import (
 	"crypto/tls"
 	"flag"
 	"os"
+	"time"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
@@ -71,6 +72,7 @@ func main() {
 	var enableHTTP2 bool
 	var credentialsNamespace string
 	var cdnBaseURL string
+	var processingInterval time.Duration
 	var tlsOpts []func(*tls.Config)
 	flag.StringVar(&metricsAddr, "metrics-bind-address", "0", "The address the metrics endpoint binds to. "+
 		"Use :8443 for HTTPS or :8080 for HTTP, or leave as 0 to disable the metrics service.")
@@ -93,6 +95,9 @@ func main() {
 		"Namespace the operator reads Selectel credential Secrets from.")
 	flag.StringVar(&cdnBaseURL, "cdn-base-url", cdn.DefaultBaseURL,
 		"Selectel CDN API root, including /cdn/v3.")
+	flag.DurationVar(&processingInterval, "processing-interval", 3*time.Minute,
+		"Base wait before checking a CDN resource again while Selectel applies configuration. "+
+			"A random delay from 0 to 30s is added.")
 	opts := zap.Options{
 		Development: true,
 	}
@@ -100,6 +105,10 @@ func main() {
 	flag.Parse()
 
 	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
+	if processingInterval <= 0 {
+		setupLog.Error(nil, "Processing interval must be positive", "flag", "processing-interval")
+		os.Exit(1)
+	}
 
 	// if the enable-http2 flag is false (the default), http/2 should be disabled
 	// due to its vulnerabilities. More specifically, disabling http/2 will
@@ -226,6 +235,7 @@ func main() {
 		CredentialsNamespace: credentialsNamespace,
 		Tokens:               tokens,
 		CDN:                  cdnClient,
+		ProcessingInterval:   processingInterval,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "Failed to create controller", "controller", "cdn.selectel-resource")
 		os.Exit(1)

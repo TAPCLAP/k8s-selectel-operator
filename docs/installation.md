@@ -49,6 +49,7 @@ helm install selectel-operator helm/selectel-operator \
 | `image.tag` | chart `appVersion` | Image tag. |
 | `leaderElection` | `true` | Passes `--leader-elect`. |
 | `cdn.baseURL` | empty | Passes `--cdn-base-url` when set. Empty keeps `https://api.selectel.ru/cdn/v3`. |
+| `cdn.processingInterval` | `3m` | Passes `--processing-interval`. The operator adds a random 0–30 seconds. |
 | `metrics.enabled` | `true` | HTTPS metrics on `metrics.bindAddress` and a Service. |
 | `metrics.bindAddress` | `:8443` | Metrics listen address. The Service port is the numeric part. |
 
@@ -112,6 +113,7 @@ kubectl logs -n selectel-infra deployment/selectel-operator-controller-manager -
 | --- | --- | --- |
 | `--credentials-namespace` | `selectel-infra` | Only Secrets in this namespace are read. `Project.spec.credentialsSecretRef.namespace` must match it. |
 | `--cdn-base-url` | `https://api.selectel.ru/cdn/v3` | CDN API root. |
+| `--processing-interval` | `3m` | Base wait while Selectel applies configuration. A random 0–30 seconds is added. |
 | `--leader-elect` | `false` in the binary, `true` in the deployed Deployment | One active manager. |
 | `--health-probe-bind-address` | `:8081` | Liveness and readiness. |
 
