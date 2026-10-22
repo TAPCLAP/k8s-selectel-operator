@@ -1,0 +1,5 @@
+This chart includes the CRDs.
+selectel-operator is installed in namespace {{ .Release.Namespace }}.
+Put the Selectel credential Secret and set Project.spec.credentialsSecretRef.namespace to this namespace.
+
+Image: {{ include "selectel-operator.image" . }}

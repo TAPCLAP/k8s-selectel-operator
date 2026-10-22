@@ -1,0 +1,1080 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.20.1
+  name: resources.cdn.selectel.tapclap.com
+spec:
+  group: cdn.selectel.tapclap.com
+  names:
+    kind: Resource
+    listKind: ResourceList
+    plural: resources
+    singular: resource
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .status.phase
+      name: Phase
+      type: string
+    - jsonPath: .spec.managementPolicy
+      name: Policy
+      type: string
+    - jsonPath: .status.cdnDomain
+      name: Domain
+      type: string
+    - jsonPath: .status.id
+      name: ID
+      type: string
+    - jsonPath: .metadata.creationTimestamp
+      name: Age
+      type: date
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: Resource is a Selectel CDN resource.
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: spec defines the desired state of Resource
+            properties:
+              active:
+                type: boolean
+              allowed_http_methods:
+                items:
+                  description: HTTPMethod is an extra method allowed besides GET,
+                    HEAD, and OPTIONS.
+                  enum:
+                  - POST
+                  - PUT
+                  - PATCH
+                  - DELETE
+                  - MKCOL
+                  - COPY
+                  - MOVE
+                  - PROPFIND
+                  - PROPPATCH
+                  - LOCK
+                  - UNLOCK
+                  type: string
+                type: array
+              auth:
+                description: ResourceAuth is request authorization.
+                properties:
+                  forbidden:
+                    type: boolean
+                  md5:
+                    description: AuthMD5 is signature authorization.
+                    properties:
+                      anywhere:
+                        type: boolean
+                      forever:
+                        type: boolean
+                      secret:
+                        type: string
+                    type: object
+                  url:
+                    type: string
+                type: object
+              cache:
+                description: ResourceCache is cache behavior.
+                properties:
+                  args_blacklist:
+                    items:
+                      type: string
+                    type: array
+                  args_whitelist:
+                    items:
+                      type: string
+                    type: array
+                  consider_args:
+                    type: boolean
+                  consider_cookies:
+                    type: boolean
+                  cookies_blacklist:
+                    items:
+                      type: string
+                    type: array
+                  cookies_whitelist:
+                    items:
+                      type: string
+                    type: array
+                  disable:
+                    type: boolean
+                  stale_conditions:
+                    items:
+                      description: StaleCondition is a reason to serve stale cache.
+                      enum:
+                      - error
+                      - timeout
+                      - invalid_header
+                      - updating
+                      - http_500
+                      - http_502
+                      - http_503
+                      - http_504
+                      - http_403
+                      - http_404
+                      - http_429
+                      type: string
+                    type: array
+                  use_stale:
+                    type: boolean
+                  valid:
+                    description: CacheValid is cache lifetime per status class. Values
+                      match ^(\d+)[smhd]$.
+                    properties:
+                      2xx:
+                        type: string
+                      3xx:
+                        type: string
+                      4xx:
+                        type: string
+                      5xx:
+                        type: string
+                      browser:
+                        type: string
+                      force:
+                        type: boolean
+                    type: object
+                type: object
+              certificate:
+                description: |-
+                  certificate binds a Selectel certificate seq allowed on the Project for this namespace.
+                  Omit it to serve the default *.selcdn.net certificate.
+                properties:
+                  id:
+                    description: id is the Selectel certificate seq. It must be listed
+                      on the Project for this namespace.
+                    format: int32
+                    minimum: 1
+                    type: integer
+                type: object
+              compress:
+                description: ResourceCompress is compression.
+                properties:
+                  brotli:
+                    type: boolean
+                  gzip:
+                    type: boolean
+                type: object
+              cors:
+                description: ResourceCORS is CORS behavior.
+                properties:
+                  always:
+                    type: boolean
+                  credentials:
+                    type: boolean
+                  disable:
+                    type: boolean
+                  domains:
+                    items:
+                      type: string
+                    type: array
+                  expose:
+                    items:
+                      type: string
+                    type: array
+                  headers:
+                    items:
+                      type: string
+                    type: array
+                  max_age:
+                    format: int32
+                    type: integer
+                  methods:
+                    items:
+                      type: string
+                    type: array
+                type: object
+              deletionPolicy:
+                default: Deactivate
+                description: deletionPolicy is Deactivate by default. Orphan leaves
+                  the Selectel resource in place.
+                enum:
+                - Deactivate
+                - Orphan
+                type: string
+              follow_redirects:
+                type: boolean
+              headers:
+                description: ResourceHeaders adds or hides headers.
+                properties:
+                  hide_in_response:
+                    items:
+                      type: string
+                    type: array
+                  request:
+                    additionalProperties:
+                      type: string
+                    type: object
+                  response:
+                    additionalProperties:
+                      type: string
+                    type: object
+                type: object
+              http2https:
+                type: boolean
+              https_only:
+                type: boolean
+              ioss:
+                type: boolean
+              limitations:
+                description: ResourceLimitations groups distribution restrictions.
+                properties:
+                  geo:
+                    items:
+                      description: GeoLimitation restricts distribution by country.
+                      properties:
+                        default_action:
+                          description: AccessAction is allow or deny.
+                          enum:
+                          - allow
+                          - deny
+                          type: string
+                        exclude:
+                          items:
+                            description: GeoExclude is a geographic exception.
+                            properties:
+                              action:
+                                description: AccessAction is allow or deny.
+                                enum:
+                                - allow
+                                - deny
+                                type: string
+                              country:
+                                type: string
+                              region:
+                                type: string
+                            type: object
+                          type: array
+                        times:
+                          items:
+                            description: LimitationTime bounds a restriction.
+                            properties:
+                              end:
+                                type: string
+                              start:
+                                type: string
+                            type: object
+                          type: array
+                      type: object
+                    type: array
+                  ip:
+                    items:
+                      description: IPLimitation restricts distribution by IP.
+                      properties:
+                        default_action:
+                          description: AccessAction is allow or deny.
+                          enum:
+                          - allow
+                          - deny
+                          type: string
+                        exclude:
+                          items:
+                            description: IPExclude is an IP exception.
+                            properties:
+                              ip:
+                                type: string
+                            type: object
+                          type: array
+                        times:
+                          items:
+                            description: LimitationTime bounds a restriction.
+                            properties:
+                              end:
+                                type: string
+                              start:
+                                type: string
+                            type: object
+                          type: array
+                      type: object
+                    type: array
+                  referer:
+                    items:
+                      description: RefererLimitation restricts distribution by Referer.
+                      properties:
+                        default_action:
+                          description: AccessAction is allow or deny.
+                          enum:
+                          - allow
+                          - deny
+                          type: string
+                        exclude:
+                          items:
+                            description: RefererExclude is a Referer exception.
+                            properties:
+                              referer:
+                                type: string
+                            type: object
+                          type: array
+                        times:
+                          items:
+                            description: LimitationTime bounds a restriction.
+                            properties:
+                              end:
+                                type: string
+                              start:
+                                type: string
+                            type: object
+                          type: array
+                      type: object
+                    type: array
+                  useragent:
+                    items:
+                      description: UserAgentLimitation restricts distribution by User-Agent.
+                      properties:
+                        default_action:
+                          description: AccessAction is allow or deny.
+                          enum:
+                          - allow
+                          - deny
+                          type: string
+                        exclude:
+                          items:
+                            description: UserAgentExclude is a User-Agent exception.
+                            properties:
+                              useragent:
+                                type: string
+                            type: object
+                          type: array
+                        times:
+                          items:
+                            description: LimitationTime bounds a restriction.
+                            properties:
+                              end:
+                                type: string
+                              start:
+                                type: string
+                            type: object
+                          type: array
+                      type: object
+                    type: array
+                type: object
+              locations:
+                additionalProperties:
+                  description: ResourceLocation is path-specific configuration.
+                  properties:
+                    allowed_http_methods:
+                      items:
+                        description: HTTPMethod is an extra method allowed besides
+                          GET, HEAD, and OPTIONS.
+                        enum:
+                        - POST
+                        - PUT
+                        - PATCH
+                        - DELETE
+                        - MKCOL
+                        - COPY
+                        - MOVE
+                        - PROPFIND
+                        - PROPPATCH
+                        - LOCK
+                        - UNLOCK
+                        type: string
+                      type: array
+                    auth:
+                      description: ResourceAuth is request authorization.
+                      properties:
+                        forbidden:
+                          type: boolean
+                        md5:
+                          description: AuthMD5 is signature authorization.
+                          properties:
+                            anywhere:
+                              type: boolean
+                            forever:
+                              type: boolean
+                            secret:
+                              type: string
+                          type: object
+                        url:
+                          type: string
+                      type: object
+                    cache:
+                      description: ResourceCache is cache behavior.
+                      properties:
+                        args_blacklist:
+                          items:
+                            type: string
+                          type: array
+                        args_whitelist:
+                          items:
+                            type: string
+                          type: array
+                        consider_args:
+                          type: boolean
+                        consider_cookies:
+                          type: boolean
+                        cookies_blacklist:
+                          items:
+                            type: string
+                          type: array
+                        cookies_whitelist:
+                          items:
+                            type: string
+                          type: array
+                        disable:
+                          type: boolean
+                        stale_conditions:
+                          items:
+                            description: StaleCondition is a reason to serve stale
+                              cache.
+                            enum:
+                            - error
+                            - timeout
+                            - invalid_header
+                            - updating
+                            - http_500
+                            - http_502
+                            - http_503
+                            - http_504
+                            - http_403
+                            - http_404
+                            - http_429
+                            type: string
+                          type: array
+                        use_stale:
+                          type: boolean
+                        valid:
+                          description: CacheValid is cache lifetime per status class.
+                            Values match ^(\d+)[smhd]$.
+                          properties:
+                            2xx:
+                              type: string
+                            3xx:
+                              type: string
+                            4xx:
+                              type: string
+                            5xx:
+                              type: string
+                            browser:
+                              type: string
+                            force:
+                              type: boolean
+                          type: object
+                      type: object
+                    compress:
+                      description: ResourceCompress is compression.
+                      properties:
+                        brotli:
+                          type: boolean
+                        gzip:
+                          type: boolean
+                      type: object
+                    cors:
+                      description: ResourceCORS is CORS behavior.
+                      properties:
+                        always:
+                          type: boolean
+                        credentials:
+                          type: boolean
+                        disable:
+                          type: boolean
+                        domains:
+                          items:
+                            type: string
+                          type: array
+                        expose:
+                          items:
+                            type: string
+                          type: array
+                        headers:
+                          items:
+                            type: string
+                          type: array
+                        max_age:
+                          format: int32
+                          type: integer
+                        methods:
+                          items:
+                            type: string
+                          type: array
+                      type: object
+                    headers:
+                      description: ResourceHeaders adds or hides headers.
+                      properties:
+                        hide_in_response:
+                          items:
+                            type: string
+                          type: array
+                        request:
+                          additionalProperties:
+                            type: string
+                          type: object
+                        response:
+                          additionalProperties:
+                            type: string
+                          type: object
+                      type: object
+                    ioss:
+                      type: boolean
+                    limitations:
+                      description: ResourceLimitations groups distribution restrictions.
+                      properties:
+                        geo:
+                          items:
+                            description: GeoLimitation restricts distribution by country.
+                            properties:
+                              default_action:
+                                description: AccessAction is allow or deny.
+                                enum:
+                                - allow
+                                - deny
+                                type: string
+                              exclude:
+                                items:
+                                  description: GeoExclude is a geographic exception.
+                                  properties:
+                                    action:
+                                      description: AccessAction is allow or deny.
+                                      enum:
+                                      - allow
+                                      - deny
+                                      type: string
+                                    country:
+                                      type: string
+                                    region:
+                                      type: string
+                                  type: object
+                                type: array
+                              times:
+                                items:
+                                  description: LimitationTime bounds a restriction.
+                                  properties:
+                                    end:
+                                      type: string
+                                    start:
+                                      type: string
+                                  type: object
+                                type: array
+                            type: object
+                          type: array
+                        ip:
+                          items:
+                            description: IPLimitation restricts distribution by IP.
+                            properties:
+                              default_action:
+                                description: AccessAction is allow or deny.
+                                enum:
+                                - allow
+                                - deny
+                                type: string
+                              exclude:
+                                items:
+                                  description: IPExclude is an IP exception.
+                                  properties:
+                                    ip:
+                                      type: string
+                                  type: object
+                                type: array
+                              times:
+                                items:
+                                  description: LimitationTime bounds a restriction.
+                                  properties:
+                                    end:
+                                      type: string
+                                    start:
+                                      type: string
+                                  type: object
+                                type: array
+                            type: object
+                          type: array
+                        referer:
+                          items:
+                            description: RefererLimitation restricts distribution
+                              by Referer.
+                            properties:
+                              default_action:
+                                description: AccessAction is allow or deny.
+                                enum:
+                                - allow
+                                - deny
+                                type: string
+                              exclude:
+                                items:
+                                  description: RefererExclude is a Referer exception.
+                                  properties:
+                                    referer:
+                                      type: string
+                                  type: object
+                                type: array
+                              times:
+                                items:
+                                  description: LimitationTime bounds a restriction.
+                                  properties:
+                                    end:
+                                      type: string
+                                    start:
+                                      type: string
+                                  type: object
+                                type: array
+                            type: object
+                          type: array
+                        useragent:
+                          items:
+                            description: UserAgentLimitation restricts distribution
+                              by User-Agent.
+                            properties:
+                              default_action:
+                                description: AccessAction is allow or deny.
+                                enum:
+                                - allow
+                                - deny
+                                type: string
+                              exclude:
+                                items:
+                                  description: UserAgentExclude is a User-Agent exception.
+                                  properties:
+                                    useragent:
+                                      type: string
+                                  type: object
+                                type: array
+                              times:
+                                items:
+                                  description: LimitationTime bounds a restriction.
+                                  properties:
+                                    end:
+                                      type: string
+                                    start:
+                                      type: string
+                                  type: object
+                                type: array
+                            type: object
+                          type: array
+                      type: object
+                    order:
+                      format: int32
+                      maximum: 999999
+                      minimum: 1
+                      type: integer
+                    origin:
+                      description: Origin is the content source.
+                      properties:
+                        aws:
+                          description: OriginAWS is AWS authorization for origin requests.
+                          properties:
+                            auth:
+                              description: AWSAuth holds origin credentials for AWS-style
+                                authorization.
+                              properties:
+                                access_key:
+                                  type: string
+                                secret_key:
+                                  type: string
+                              type: object
+                          type: object
+                        connect_timeout:
+                          type: string
+                        forward_host_header:
+                          type: boolean
+                        hostname:
+                          type: string
+                        https:
+                          type: boolean
+                        read_timeout:
+                          type: string
+                        s3_bucket:
+                          type: string
+                        send_timeout:
+                          type: string
+                        servers:
+                          additionalProperties:
+                            description: OriginServer is one origin behind a domain
+                              or IP key.
+                            properties:
+                              backup:
+                                type: boolean
+                              max_fails:
+                                format: int32
+                                type: integer
+                              port:
+                                format: int32
+                                maximum: 65535
+                                minimum: 1
+                                type: integer
+                              weight:
+                                format: int32
+                                minimum: 1
+                                type: integer
+                            type: object
+                          type: object
+                        sni_hostname:
+                          type: string
+                        ssl_verify:
+                          type: boolean
+                      type: object
+                    packaging:
+                      description: ResourcePackaging is video conversion.
+                      properties:
+                        mp4:
+                          description: PackagingMP4 converts MP4 output.
+                          properties:
+                            output_protocols:
+                              items:
+                                description: OutputProtocol is a packaged video protocol.
+                                enum:
+                                - MPEG-DASH
+                                - HLS
+                                type: string
+                              type: array
+                          type: object
+                      type: object
+                    return:
+                      description: ResourceReturn forces a response.
+                      properties:
+                        body:
+                          type: string
+                        http_status_code:
+                          format: int32
+                          maximum: 599
+                          minimum: 100
+                          type: integer
+                        url:
+                          type: string
+                      type: object
+                    rewrite:
+                      items:
+                        description: ResourceRewrite rewrites the request path.
+                        properties:
+                          flag:
+                            description: RewriteFlag stops further rewrite processing.
+                            enum:
+                            - break
+                            type: string
+                          from:
+                            type: string
+                          scope:
+                            description: RewriteScope is where a rewrite runs.
+                            enum:
+                            - edge
+                            - shield
+                            type: string
+                          to:
+                            type: string
+                        type: object
+                      type: array
+                  type: object
+                type: object
+              managementPolicy:
+                default: Manage
+                description: |-
+                  managementPolicy is Manage by default.
+                  Observe links an existing resource by resourceID or name and reports drift.
+                  Manage creates and updates the Selectel resource.
+                enum:
+                - Observe
+                - Manage
+                type: string
+              modern_tls_only:
+                type: boolean
+              name:
+                description: name is the Selectel resource name. Empty means metadata.name.
+                maxLength: 50
+                minLength: 1
+                pattern: ^[a-zA-Zа-яА-ЯёЁ0-9\-_ ]{1,50}$
+                type: string
+              names:
+                items:
+                  type: string
+                type: array
+              no_http2:
+                type: boolean
+              origin:
+                description: Origin is the content source.
+                properties:
+                  aws:
+                    description: OriginAWS is AWS authorization for origin requests.
+                    properties:
+                      auth:
+                        description: AWSAuth holds origin credentials for AWS-style
+                          authorization.
+                        properties:
+                          access_key:
+                            type: string
+                          secret_key:
+                            type: string
+                        type: object
+                    type: object
+                  connect_timeout:
+                    type: string
+                  forward_host_header:
+                    type: boolean
+                  hostname:
+                    type: string
+                  https:
+                    type: boolean
+                  read_timeout:
+                    type: string
+                  s3_bucket:
+                    type: string
+                  send_timeout:
+                    type: string
+                  servers:
+                    additionalProperties:
+                      description: OriginServer is one origin behind a domain or IP
+                        key.
+                      properties:
+                        backup:
+                          type: boolean
+                        max_fails:
+                          format: int32
+                          type: integer
+                        port:
+                          format: int32
+                          maximum: 65535
+                          minimum: 1
+                          type: integer
+                        weight:
+                          format: int32
+                          minimum: 1
+                          type: integer
+                      type: object
+                    type: object
+                  sni_hostname:
+                    type: string
+                  ssl_verify:
+                    type: boolean
+                type: object
+              packaging:
+                description: ResourcePackaging is video conversion.
+                properties:
+                  mp4:
+                    description: PackagingMP4 converts MP4 output.
+                    properties:
+                      output_protocols:
+                        items:
+                          description: OutputProtocol is a packaged video protocol.
+                          enum:
+                          - MPEG-DASH
+                          - HLS
+                          type: string
+                        type: array
+                    type: object
+                type: object
+              projectRef:
+                description: projectRef is the cluster-scoped Project. The namespace
+                  is not part of the reference.
+                properties:
+                  name:
+                    description: name of the Project.
+                    minLength: 1
+                    type: string
+                required:
+                - name
+                type: object
+              resourceID:
+                description: |-
+                  resourceID adopts an existing Selectel resource instead of creating one.
+                  The operator writes the created UUID to status.id and does not fill this field.
+                type: string
+              return:
+                description: ResourceReturn forces a response.
+                properties:
+                  body:
+                    type: string
+                  http_status_code:
+                    format: int32
+                    maximum: 599
+                    minimum: 100
+                    type: integer
+                  url:
+                    type: string
+                type: object
+              rewrite:
+                items:
+                  description: ResourceRewrite rewrites the request path.
+                  properties:
+                    flag:
+                      description: RewriteFlag stops further rewrite processing.
+                      enum:
+                      - break
+                      type: string
+                    from:
+                      type: string
+                    scope:
+                      description: RewriteScope is where a rewrite runs.
+                      enum:
+                      - edge
+                      - shield
+                      type: string
+                    to:
+                      type: string
+                  type: object
+                type: array
+              robots:
+                description: ResourceRobots controls robots.txt.
+                properties:
+                  robotsContent:
+                    type: string
+                  type:
+                    description: RobotsType controls robots.txt handling.
+                    enum:
+                    - deny
+                    - custom
+                    - cached
+                    type: string
+                type: object
+              slice_size_megabytes:
+                format: int32
+                maximum: 1024
+                minimum: 1
+                type: integer
+              ssl_protocols:
+                items:
+                  description: SSLProtocol is a TLS version the CDN edge may use.
+                  enum:
+                  - TLSv1
+                  - TLSv1.1
+                  - TLSv1.2
+                  - TLSv1.3
+                  - SSLv3
+                  type: string
+                type: array
+              strong_ssl_ciphers:
+                type: boolean
+              tuning:
+                description: Tuning selects distribution optimization.
+                enum:
+                - default
+                - large
+                - live
+                type: string
+              use_http3:
+                type: boolean
+            required:
+            - projectRef
+            type: object
+            x-kubernetes-validations:
+            - message: certificate.id is required when certificate is set
+              rule: '!has(self.certificate) || has(self.certificate.id)'
+          status:
+            description: status defines the observed state of Resource
+            properties:
+              cdnDomain:
+                description: cdnDomain is the *.selcdn.net domain assigned by Selectel.
+                type: string
+              conditions:
+                description: conditions represent the current state of the Resource.
+                items:
+                  description: Condition contains details for one aspect of the current
+                    state of this API Resource.
+                  properties:
+                    lastTransitionTime:
+                      description: |-
+                        lastTransitionTime is the last time the condition transitioned from one status to another.
+                        This should be when the underlying condition changed.  If that is not known, then using the time when the API field changed is acceptable.
+                      format: date-time
+                      type: string
+                    message:
+                      description: |-
+                        message is a human readable message indicating details about the transition.
+                        This may be an empty string.
+                      maxLength: 32768
+                      type: string
+                    observedGeneration:
+                      description: |-
+                        observedGeneration represents the .metadata.generation that the condition was set based upon.
+                        For instance, if .metadata.generation is currently 12, but the .status.conditions[x].observedGeneration is 9, the condition is out of date
+                        with respect to the current state of the instance.
+                      format: int64
+                      minimum: 0
+                      type: integer
+                    reason:
+                      description: |-
+                        reason contains a programmatic identifier indicating the reason for the condition's last transition.
+                        Producers of specific condition types may define expected values and meanings for this field,
+                        and whether the values are considered a guaranteed API.
+                        The value should be a CamelCase string.
+                        This field may not be empty.
+                      maxLength: 1024
+                      minLength: 1
+                      pattern: ^[A-Za-z]([A-Za-z0-9_,:]*[A-Za-z0-9_])?$
+                      type: string
+                    status:
+                      description: status of the condition, one of True, False, Unknown.
+                      enum:
+                      - "True"
+                      - "False"
+                      - Unknown
+                      type: string
+                    type:
+                      description: type of condition in CamelCase or in foo.example.com/CamelCase.
+                      maxLength: 316
+                      pattern: ^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*/)?(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])$
+                      type: string
+                  required:
+                  - lastTransitionTime
+                  - message
+                  - reason
+                  - status
+                  - type
+                  type: object
+                type: array
+                x-kubernetes-list-map-keys:
+                - type
+                x-kubernetes-list-type: map
+              creationTimestamp:
+                description: creationTimestamp is when Selectel created the resource.
+                format: date-time
+                type: string
+              drift:
+                description: drift lists spec fields Manage would update. Empty when
+                  the spec matches Selectel.
+                items:
+                  description: FieldDrift is one spec field Manage would send because
+                    it differs from Selectel.
+                  properties:
+                    actual:
+                      description: actual is the JSON value from Selectel, truncated.
+                      type: string
+                    desired:
+                      description: desired is the JSON value from the spec, truncated.
+                      type: string
+                    path:
+                      description: path is the JSON path inside the CDN resource body.
+                      type: string
+                  required:
+                  - path
+                  type: object
+                type: array
+              id:
+                description: id is the Selectel resource UUID.
+                type: string
+              phase:
+                description: phase is Pending, Processing, Ready, Error, or Drift.
+                enum:
+                - Pending
+                - Processing
+                - Ready
+                - Error
+                - Drift
+                type: string
+              taskID:
+                description: taskID is the last Selectel configuration task id.
+                type: string
+            type: object
+        required:
+        - spec
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}

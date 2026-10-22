@@ -1,0 +1,44 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "selectel-operator.fullname" . }}
+  labels:
+    {{- include "selectel-operator.labels" . | nindent 4 }}
+rules:
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["create", "patch"]
+  - apiGroups: ["cdn.selectel.tapclap.com"]
+    resources: ["resources"]
+    verbs: ["create", "delete", "get", "list", "patch", "update", "watch"]
+  - apiGroups: ["cdn.selectel.tapclap.com"]
+    resources: ["resources/finalizers"]
+    verbs: ["update"]
+  - apiGroups: ["cdn.selectel.tapclap.com"]
+    resources: ["resources/status"]
+    verbs: ["get", "patch", "update"]
+  - apiGroups: ["selectel.tapclap.com"]
+    resources: ["projects"]
+    verbs: ["get", "list", "patch", "update", "watch"]
+  - apiGroups: ["selectel.tapclap.com"]
+    resources: ["projects/finalizers"]
+    verbs: ["update"]
+  - apiGroups: ["selectel.tapclap.com"]
+    resources: ["projects/status"]
+    verbs: ["get", "patch", "update"]
+{{- if .Values.metrics.enabled }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "selectel-operator.fullname" . }}-metrics-auth
+  labels:
+    {{- include "selectel-operator.labels" . | nindent 4 }}
+rules:
+  - apiGroups: ["authentication.k8s.io"]
+    resources: ["tokenreviews"]
+    verbs: ["create"]
+  - apiGroups: ["authorization.k8s.io"]
+    resources: ["subjectaccessreviews"]
+    verbs: ["create"]
+{{- end }}

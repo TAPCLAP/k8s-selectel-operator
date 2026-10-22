@@ -1,0 +1,63 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: manager-role
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+  - patch
+- apiGroups:
+  - cdn.selectel.tapclap.com
+  resources:
+  - resources
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - cdn.selectel.tapclap.com
+  resources:
+  - resources/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - cdn.selectel.tapclap.com
+  resources:
+  - resources/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - selectel.tapclap.com
+  resources:
+  - projects
+  verbs:
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - selectel.tapclap.com
+  resources:
+  - projects/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - selectel.tapclap.com
+  resources:
+  - projects/status
+  verbs:
+  - get
+  - patch
+  - update

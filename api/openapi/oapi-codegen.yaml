@@ -1,0 +1,7 @@
+package: cdnapi
+output: internal/selectel/cdn/cdnapi/zz_generated.client.go
+generate:
+  models: true
+  client: true
+output-options:
+  skip-prune: true

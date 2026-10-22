@@ -1,0 +1,17 @@
+{{- if .Values.metrics.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "selectel-operator.fullname" . }}-metrics
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "selectel-operator.labels" . | nindent 4 }}
+spec:
+  ports:
+    - name: https
+      port: {{ trimPrefix ":" .Values.metrics.bindAddress }}
+      protocol: TCP
+      targetPort: metrics
+  selector:
+    {{- include "selectel-operator.selectorLabels" . | nindent 4 }}
+{{- end }}

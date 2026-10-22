@@ -1,0 +1,6 @@
+## Append samples of your project ##
+resources:
+- selectel_credentials_secret.yaml
+- selectel_v1alpha1_project.yaml
+- cdn.selectel_v1alpha1_resource.yaml
+# +kubebuilder:scaffold:manifestskustomizesamples

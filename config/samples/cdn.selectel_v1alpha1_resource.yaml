@@ -1,0 +1,18 @@
+apiVersion: cdn.selectel.tapclap.com/v1alpha1
+kind: Resource
+metadata:
+  name: static
+  namespace: media
+spec:
+  projectRef:
+    name: production
+  deletionPolicy: Deactivate
+  origin:
+    https: true
+    servers:
+      origin.example.com: {}
+  names:
+    - cdn.example.com
+  certificate:
+    id: 1
+  http2https: true

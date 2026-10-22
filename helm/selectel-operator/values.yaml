@@ -1,0 +1,42 @@
+replicaCount: 1
+
+image:
+  # Published image. The release workflow rewrites this to the repository that built the chart.
+  repository: ghcr.io/tapclap/k8s-selectel-operator
+  # Empty uses Chart.appVersion.
+  tag: ""
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  annotations: {}
+
+# Credential Secrets are read from the release namespace.
+leaderElection: true
+
+# Empty uses the operator default, https://api.selectel.ru/cdn/v3.
+cdn:
+  baseURL: ""
+
+metrics:
+  enabled: true
+  bindAddress: ":8443"
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 128Mi
+  requests:
+    cpu: 10m
+    memory: 64Mi
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+podAnnotations: {}
+podLabels: {}

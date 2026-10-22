@@ -1,0 +1,12 @@
+apiVersion: selectel.tapclap.com/v1alpha1
+kind: Project
+metadata:
+  name: production
+spec:
+  allowedNamespaces:
+    - name: media
+      certificates:
+        - id: 1
+  credentialsSecretRef:
+    name: selectel-production
+    namespace: selectel-infra
