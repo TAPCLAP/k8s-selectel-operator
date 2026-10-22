@@ -483,7 +483,7 @@ func (r *ResourceReconciler) callResult(ctx context.Context, resource *cdnv1alph
 		}
 		return ctrl.Result{RequeueAfter: requeueError}, nil
 	}
-	if statusErr := r.mark(ctx, resource, resource.Status.Phase, metav1.ConditionFalse, reasonAPIError, err.Error()); statusErr != nil {
+	if statusErr := r.mark(ctx, resource, cdnv1alpha1.PhaseError, metav1.ConditionFalse, reasonAPIError, err.Error()); statusErr != nil {
 		return ctrl.Result{}, statusErr
 	}
 	return ctrl.Result{RequeueAfter: requeueError}, nil

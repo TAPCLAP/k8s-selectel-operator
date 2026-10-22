@@ -172,7 +172,7 @@ The API body receives the integer as `certificate`. The operator does not upload
 | `Processing` | Selectel status is `Processing`, including `dns processing` and `configuration processing`. |
 | `Ready` | Selectel status is `Completed` and the spec matches. |
 | `Drift` | `managementPolicy` is `Observe`, Selectel is completed, and the spec differs. |
-| `Error` | Selectel status is `Error`, or the last create or adopt was rejected. |
+| `Error` | Selectel status is `Error`, the last create or adopt was rejected, or a CDN API call failed. |
 
 | Reason | Ready | Meaning |
 | --- | --- | --- |
@@ -197,7 +197,7 @@ The API body receives the integer as `certificate`. The operator does not upload
 | `SelectelError` | False | Selectel phase is `Error` and the spec already matches. Retried about once a minute. A spec change is still sent with `PUT`, so a bad configuration can be corrected. |
 | `RateLimited` | False | HTTP 429. Waits for `Retry-After`, or 30 seconds. |
 | `AuthFailed` | False | Token request failed, or CDN still returns 401 after one refresh. |
-| `APIError` | False | Other HTTP error from the CDN API. |
+| `APIError` | False | Other HTTP error from the CDN API. `status.phase` becomes `Error`. |
 
 ## Reconcile
 

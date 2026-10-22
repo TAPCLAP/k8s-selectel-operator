@@ -172,7 +172,7 @@ Seq должен быть в записи `allowedNamespaces`, которая п
 | `Processing` | Статус Selectel — `Processing`, включая `dns processing` и `configuration processing`. |
 | `Ready` | Статус Selectel — `Completed`, и spec совпадает. |
 | `Drift` | `managementPolicy` равен `Observe`, Selectel завершил применение, а spec отличается. |
-| `Error` | Статус Selectel — `Error`, либо последнее создание или усыновление отклонено. |
+| `Error` | Статус Selectel — `Error`, последнее создание или усыновление отклонено, либо вызов CDN API завершился ошибкой. |
 
 | Причина | Ready | Смысл |
 | --- | --- | --- |
@@ -197,7 +197,7 @@ Seq должен быть в записи `allowedNamespaces`, которая п
 | `SelectelError` | False | Фаза Selectel — `Error`, и spec уже совпадает. Повтор примерно раз в минуту. Изменение spec всё равно уходит через `PUT`, чтобы плохую конфигурацию можно было исправить. |
 | `RateLimited` | False | HTTP 429. Ожидание по `Retry-After` или 30 секунд. |
 | `AuthFailed` | False | Запрос токена не удался, или CDN снова вернул 401 после одного обновления. |
-| `APIError` | False | Другая HTTP-ошибка CDN API. |
+| `APIError` | False | Другая HTTP-ошибка CDN API. `status.phase` становится `Error`. |
 
 ## Reconcile
 
