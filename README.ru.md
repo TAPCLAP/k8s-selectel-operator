@@ -34,7 +34,7 @@ helm install selectel-operator \
   --create-namespace
 ```
 
-`<version>` — это git-тег без начального `v`. Тег `v*` публикует образ `ghcr.io/<owner>/<repo>:<tag>` и оба чарта. Чарт в этом репозитории имеет версию `0.0.1`. Из исходников:
+`<version>` — это git-тег без начального `v`. Тег `v*` публикует образ `ghcr.io/<owner>/<repo>:<tag>` и оба чарта. Чарт в этом репозитории имеет версию `0.0.3`. Из исходников:
 
 ```bash
 helm install selectel-operator helm/selectel-operator \

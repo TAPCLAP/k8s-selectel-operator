@@ -29,7 +29,7 @@ helm install selectel-operator \
   --create-namespace
 ```
 
-`<version>` is the git tag without the leading `v`. The chart in this repository is `0.0.1`.
+`<version>` is the git tag without the leading `v`. The chart in this repository is `0.0.3`.
 
 From a checkout, point the chart at an image you have built:
 
