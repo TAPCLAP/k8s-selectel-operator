@@ -67,6 +67,7 @@ func Matches(desired, actual map[string]any) (bool, error) {
 	}
 	desiredMap, _ := left.(map[string]any)
 	actualMap, _ := right.(map[string]any)
+	ignoreAssignedDomain(desiredMap, actualMap)
 	return equalValue(desiredMap, actualMap), nil
 }
 
@@ -83,6 +84,7 @@ func Diff(desired, actual map[string]any) ([]cdnv1alpha1.FieldDrift, int, error)
 	}
 	desiredMap, _ := left.(map[string]any)
 	actualMap, _ := right.(map[string]any)
+	ignoreAssignedDomain(desiredMap, actualMap)
 	var found []cdnv1alpha1.FieldDrift
 	collectDrift("", desiredMap, actualMap, &found)
 	sort.Slice(found, func(i, j int) bool { return found[i].Path < found[j].Path })
@@ -141,6 +143,42 @@ func driftValue(value any) string {
 		return string(raw)
 	}
 	return string(raw[:maxDriftBytes]) + "..."
+}
+
+// ignoreAssignedDomain drops cdn_domain from both names lists. Selectel appends
+// that assigned domain to names, and the order of the remaining names does not matter.
+func ignoreAssignedDomain(desired, actual map[string]any) {
+	domain, _ := actual["cdn_domain"].(string)
+	if domain == "" {
+		return
+	}
+	if names, ok := desired["names"]; ok {
+		desired["names"] = namesWithout(names, domain)
+	}
+	if names, ok := actual["names"]; ok {
+		actual["names"] = namesWithout(names, domain)
+	}
+}
+
+func namesWithout(value any, domain string) any {
+	items, ok := value.([]any)
+	if !ok {
+		return value
+	}
+	kept := make([]string, 0, len(items))
+	for _, item := range items {
+		name, ok := item.(string)
+		if !ok || name == domain {
+			continue
+		}
+		kept = append(kept, name)
+	}
+	sort.Strings(kept)
+	out := make([]any, len(kept))
+	for i, name := range kept {
+		out[i] = name
+	}
+	return out
 }
 
 func canonical(value any) (any, error) {

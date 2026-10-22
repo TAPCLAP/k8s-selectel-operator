@@ -110,7 +110,7 @@ spec:
 2. Создайте `Resource` с `managementPolicy: Observe` и этим UUID в `spec.resourceID`. Либо не задавайте `resourceID`, а укажите в `spec.name` имя, которое уже занято в проекте Selectel. Пустое `spec.name` означает `metadata.name`. Оператор найдёт ресурс в списке и свяжет его.
 3. Дождитесь `status.id`. Selectel при этом не меняется. Смотрите `status.drift` и условие `Ready`:
    - `Observing`: spec совпадает. `Manage` не отправил бы `PUT`.
-   - `Drift`: `status.phase` равен `Drift`. Каждая запись — поле spec, которое обновил бы `Manage`. `desired` и `actual` — короткие JSON-значения. Ключи, которые есть только в ответе API, дрифтом не считаются.
+   - `Drift`: `status.phase` равен `Drift`. Каждая запись — поле spec, которое обновил бы `Manage`. `desired` и `actual` — короткие JSON-значения. Ключи, которые есть только в ответе API, дрифтом не считаются. Выданный домен `*.selcdn.net` внутри `names` тоже не дрифт: Selectel дописывает в этот список `cdn_domain`.
    - `WouldCreate`: в Selectel ничего не совпало. `status.id` остаётся пустым, поиск повторяется примерно раз в минуту. `Manage` отправил бы `POST`. `Observe` этого не делает.
 4. Правьте spec, пока `status.drift` не станет пустым.
 5. Поставьте `managementPolicy: Manage`. Следующий reconcile один раз применяет оставшееся отличие.

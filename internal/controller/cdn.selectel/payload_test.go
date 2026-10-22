@@ -80,6 +80,36 @@ func TestMatchesIgnoresServerDefaults(t *testing.T) {
 	}
 }
 
+func TestNamesIgnoreAssignedDomain(t *testing.T) {
+	t.Parallel()
+	const domain = "cd791158-e469-43f3-99db-d2b0a40f462d.selcdn.net"
+	desired := map[string]any{"names": []any{"debug-cdn.g.tapclap.com"}}
+	actual := map[string]any{
+		"cdn_domain": domain,
+		"names":      []any{domain, "debug-cdn.g.tapclap.com"},
+	}
+	ok, err := Matches(desired, actual)
+	if err != nil || !ok {
+		t.Fatalf("match = %v %v", ok, err)
+	}
+
+	actual["names"] = []any{"other.example.com", "debug-cdn.g.tapclap.com", domain}
+	ok, err = Matches(desired, actual)
+	if err != nil || ok {
+		t.Fatalf("expected an extra name to drift, match = %v %v", ok, err)
+	}
+	got, total, err := Diff(desired, actual)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if total != 1 || len(got) != 1 || got[0].Path != "names" {
+		t.Fatalf("drift = %#v total %d", got, total)
+	}
+	if got[0].Actual != `["debug-cdn.g.tapclap.com","other.example.com"]` {
+		t.Fatalf("actual = %s", got[0].Actual)
+	}
+}
+
 func TestDiffReportsNestedFieldsAndIgnoresDefaults(t *testing.T) {
 	t.Parallel()
 	desired := map[string]any{"name": "static", "origin": map[string]any{"https": true}}

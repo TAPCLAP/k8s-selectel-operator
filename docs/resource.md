@@ -110,7 +110,7 @@ Use this when a CDN resource already exists in Selectel and the custom resource 
 2. Create the `Resource` with `managementPolicy: Observe` and that UUID in `spec.resourceID`. Alternatively omit `resourceID` and set `spec.name` to the name already used in the Selectel project, or leave `spec.name` empty to use `metadata.name`. The operator lists resources and links the one with that name.
 3. Wait until `status.id` is set. Selectel is not modified. Read `status.drift` and the `Ready` condition:
    - `Observing`: the spec matches. `Manage` would not send `PUT`.
-   - `Drift`: `status.phase` is `Drift`. Each entry is a spec field `Manage` would update. `desired` and `actual` are short JSON values. Keys that exist only in the API response are not drift.
+   - `Drift`: `status.phase` is `Drift`. Each entry is a spec field `Manage` would update. `desired` and `actual` are short JSON values. Keys that exist only in the API response are not drift. The assigned `*.selcdn.net` domain inside `names` is not drift either: Selectel appends `cdn_domain` to that list.
    - `WouldCreate`: nothing in Selectel matches. `status.id` stays empty and the search repeats about once a minute. `Manage` would send `POST`. `Observe` does not.
 4. Edit the spec until `status.drift` is empty.
 5. Set `managementPolicy: Manage`. The next reconcile applies a remaining difference once.
