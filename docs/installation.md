@@ -123,7 +123,7 @@ Changing `--credentials-namespace` requires the same change in `config/manager/m
 
 The manager ClusterRole can get, list, and watch `Project` and CDN `Resource` objects, update their status and finalizers, and write Events. It has no rule for Secrets.
 
-Secret access is a namespaced Role, `credentials-reader`, with `get`, `list`, and `watch` on Secrets in `selectel-infra`. A `Project` that points at a Secret in a tenant namespace gets `Ready=False`, reason `SecretNamespaceForbidden`, and the Secret is not read.
+Secret access is a namespaced Role, `credentials-reader`, with `get`, `list`, and `watch` on Secrets in `selectel-infra`. The manager lists and watches Secrets only in `--credentials-namespace`, so that Role is enough. A `Project` that points at a Secret in a tenant namespace gets `Ready=False`, reason `SecretNamespaceForbidden`, and the Secret is not read.
 
 Tenant users who should create CDN resources need permission on `cdn.selectel.tapclap.com` `resources` in their namespace. Creating a `Project` is a cluster-admin action: it chooses the Secret and the namespace allowlist.
 

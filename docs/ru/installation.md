@@ -123,7 +123,7 @@ kubectl logs -n selectel-infra deployment/selectel-operator-controller-manager -
 
 ClusterRole менеджера может get, list и watch объекты `Project` и CDN `Resource`, обновлять их status и finalizer и писать Events. Правила на Secret в этой ClusterRole нет.
 
-Доступ к секретам — namespaced Role `credentials-reader` с `get`, `list` и `watch` на Secret в `selectel-infra`. `Project`, который ссылается на Secret в namespace тенанта, получает `Ready=False`, причина `SecretNamespaceForbidden`, и секрет не читается.
+Доступ к секретам — namespaced Role `credentials-reader` с `get`, `list` и `watch` на Secret в `selectel-infra`. Менеджер делает list и watch Secret только в `--credentials-namespace`, поэтому этой Role достаточно. `Project`, который ссылается на Secret в namespace тенанта, получает `Ready=False`, причина `SecretNamespaceForbidden`, и секрет не читается.
 
 Пользователям тенанта, которые создают CDN-ресурсы, нужно право на `resources` группы `cdn.selectel.tapclap.com` в своём namespace. Создание `Project` — действие cluster-admin: там выбираются Secret и список namespace.
 
