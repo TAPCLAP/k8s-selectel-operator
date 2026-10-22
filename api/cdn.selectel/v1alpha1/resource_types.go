@@ -706,7 +706,7 @@ type ResourceStatus struct {
 // +kubebuilder:printcolumn:name="Phase",type=string,JSONPath=`.status.phase`
 // +kubebuilder:printcolumn:name="Policy",type=string,JSONPath=`.spec.managementPolicy`
 // +kubebuilder:printcolumn:name="Domain",type=string,JSONPath=`.status.cdnDomain`
-// +kubebuilder:printcolumn:name="ID",type=string,JSONPath=`.status.id`
+// +kubebuilder:printcolumn:name="Names",type=string,JSONPath=`.spec.names`,description="Personal domains from spec.names"
 // +kubebuilder:printcolumn:name="Age",type=date,JSONPath=`.metadata.creationTimestamp`
 
 // Resource is a Selectel CDN resource.

@@ -24,8 +24,9 @@ spec:
     - jsonPath: .status.cdnDomain
       name: Domain
       type: string
-    - jsonPath: .status.id
-      name: ID
+    - description: Personal domains from spec.names
+      jsonPath: .spec.names
+      name: Names
       type: string
     - jsonPath: .metadata.creationTimestamp
       name: Age

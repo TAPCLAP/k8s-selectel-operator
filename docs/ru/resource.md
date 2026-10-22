@@ -28,7 +28,7 @@ spec:
 
 Ресурсу, который отдаёт трафик, нужен `origin.servers` хотя бы с одной записью. Selectel выдаёт `status.cdnDomain` (`<id>.selcdn.net`) и `status.id` (UUID). Эти поля и время создания есть только в status.
 
-`kubectl get resources` показывает `Phase`, `Domain` и `ID`.
+`kubectl get resources` показывает `Phase`, `Policy`, `Domain` и `Names`. `Names` выводит `spec.names`, когда персональные домены заданы.
 
 ## Поля оператора
 

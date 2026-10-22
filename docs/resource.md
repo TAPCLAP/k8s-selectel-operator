@@ -28,7 +28,7 @@ spec:
 
 A resource that serves traffic needs `origin.servers` with at least one entry. Selectel assigns `status.cdnDomain` (`<id>.selcdn.net`) and `status.id` (a UUID). Those fields, and the creation time, are status only.
 
-`kubectl get resources` prints `Phase`, `Domain`, and `ID`.
+`kubectl get resources` prints `Phase`, `Policy`, `Domain`, and `Names`. `Names` shows `spec.names` when personal domains are set.
 
 ## Operator fields
 
