@@ -162,7 +162,7 @@ The API body receives the integer as `certificate`. The operator does not upload
 | `cdnDomain` | Assigned `*.selcdn.net` domain. |
 | `creationTimestamp` | Selectel creation time (`creation_ts`). |
 | `phase` | `Pending`, `Processing`, `Ready`, `Error`, or `Drift`. |
-| `drift` | Spec fields `Manage` would update. Empty when the spec matches. |
+| `drift` | Spec fields that differ from Selectel. `Manage` records them when it sends an update. `Observe` records them and does not send the update. Empty when the spec matches. |
 | `taskID` | Last Selectel configuration task id. |
 | `conditions` | `Ready` is `True` only when the resource is completed and matches the spec. |
 
@@ -205,7 +205,7 @@ The API body receives the integer as `certificate`. The operator does not upload
 4. If `status.id` is empty and `spec.resourceID` is set, `GET` that id and store it. HTTP 404 sets `AdoptFailed` for this generation.
 5. If there is still no id, `GET /resources` and look for `spec.name`, including inactive resources. A match is linked. `Manage` sends `POST /resources` when nothing matches. `Observe` sets `WouldCreate` and tries again.
 6. On `status: accept`, write `id`, `cdnDomain`, and `taskID` immediately. A create that returns `error` sets `CreateRejected` for this generation.
-7. Poll status. `Processing` waits. `Completed` compares the spec with `GET`. Under `Manage`, a difference sends `PUT /resources/{id}` with the full desired body, without `id`, `cdn_domain`, or `creation_ts`. `Observe` records that difference in `status.drift`. `PATCH` is reserved for deactivation: the API describes patch as first-level updates, which can wipe a nested object.
+7. Poll status. `Processing` waits and keeps `status.drift`. `Completed` compares the spec with `GET`. Under `Manage`, a difference is written to `status.drift` and sent as `PUT /resources/{id}` with the full desired body, without `id`, `cdn_domain`, or `creation_ts`. `Observe` records that difference and does not send it. `PATCH` is reserved for deactivation: the API describes patch as first-level updates, which can wipe a nested object.
 8. HTTP 404 on a known id under `Manage` clears `status.id`, emits the Event `Recreated`, and creates the resource again. `Observe` sets `WouldRecreate` and keeps the id.
 9. HTTP 401 drops the token cache and retries the call once.
 

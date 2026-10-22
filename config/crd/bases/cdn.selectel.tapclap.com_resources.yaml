@@ -1334,8 +1334,8 @@ spec:
                 format: date-time
                 type: string
               drift:
-                description: drift lists spec fields Manage would update. Empty when
-                  the spec matches Selectel.
+                description: drift lists spec fields that differ from Selectel. Manage
+                  records them when it sends an update. Empty when the spec matches.
                 items:
                   description: FieldDrift is one spec field Manage would send because
                     it differs from Selectel.

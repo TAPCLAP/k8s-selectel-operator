@@ -162,7 +162,7 @@ Seq должен быть в записи `allowedNamespaces`, которая п
 | `cdnDomain` | Выданный домен `*.selcdn.net`. |
 | `creationTimestamp` | Время создания в Selectel (`creation_ts`). |
 | `phase` | `Pending`, `Processing`, `Ready`, `Error` или `Drift`. |
-| `drift` | Поля spec, которые обновил бы `Manage`. Пусто, когда spec совпадает. |
+| `drift` | Поля spec, которые отличаются от Selectel. `Manage` записывает их, когда отправляет обновление. `Observe` записывает их и обновление не отправляет. Пусто, когда spec совпадает. |
 | `taskID` | Id последней задачи конфигурации Selectel. |
 | `conditions` | `Ready` равен `True`, только когда ресурс завершён и совпадает со spec. |
 
@@ -205,7 +205,7 @@ Seq должен быть в записи `allowedNamespaces`, которая п
 4. Если `status.id` пуст и задан `spec.resourceID`, выполняется `GET` этого id, и он сохраняется. HTTP 404 ставит `AdoptFailed` для этого generation.
 5. Если id всё ещё нет, выполняется `GET /resources` и поиск по `spec.name`, включая неактивные ресурсы. Совпадение связывается. `Manage` шлёт `POST /resources`, если совпадения нет. `Observe` ставит `WouldCreate` и повторяет попытку.
 6. При `status: accept` сразу записываются `id`, `cdnDomain` и `taskID`. Создание с ответом `error` ставит `CreateRejected` для этого generation.
-7. Опрашивается статус. `Processing` ждёт. `Completed` сравнивает spec с `GET`. При `Manage` отличие отправляет `PUT /resources/{id}` с полным желаемым телом, без `id`, `cdn_domain` и `creation_ts`. `Observe` записывает это отличие в `status.drift`. `PATCH` оставлен для деактивации: API описывает patch как изменение полей первого уровня, и вложенный объект так легко затереть.
+7. Опрашивается статус. `Processing` ждёт и сохраняет `status.drift`. `Completed` сравнивает spec с `GET`. При `Manage` отличие записывается в `status.drift` и уходит `PUT /resources/{id}` с полным желаемым телом, без `id`, `cdn_domain` и `creation_ts`. `Observe` записывает отличие и не отправляет его. `PATCH` оставлен для деактивации: API описывает patch как изменение полей первого уровня, и вложенный объект так легко затереть.
 8. HTTP 404 на известный id при `Manage` очищает `status.id`, пишет Event `Recreated` и создаёт ресурс заново. `Observe` ставит `WouldRecreate` и оставляет id.
 9. HTTP 401 сбрасывает кэш токена и повторяет вызов один раз.
 

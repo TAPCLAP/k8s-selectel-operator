@@ -288,7 +288,7 @@ func (r *ResourceReconciler) sync(ctx context.Context, project *selectelv1alpha1
 		if message == "" {
 			message = "Selectel is applying the CDN configuration"
 		}
-		if err := r.mark(ctx, resource, cdnv1alpha1.PhaseProcessing, metav1.ConditionFalse, reasonProcessing, message); err != nil {
+		if err := r.finish(ctx, resource, cdnv1alpha1.PhaseProcessing, metav1.ConditionFalse, reasonProcessing, message, resource.Status.Drift); err != nil {
 			return ctrl.Result{}, err
 		}
 		return ctrl.Result{RequeueAfter: r.processingDelay()}, nil
@@ -309,13 +309,7 @@ func (r *ResourceReconciler) sync(ctx context.Context, project *selectelv1alpha1
 			if observing(resource) {
 				return r.observe(ctx, resource, desired, actual)
 			}
-			if err := r.put(ctx, project, creds, resource, desired); err != nil {
-				return r.callResult(ctx, resource, err)
-			}
-			if err := r.mark(ctx, resource, cdnv1alpha1.PhaseProcessing, metav1.ConditionFalse, reasonProcessing, "configuration update submitted"); err != nil {
-				return ctrl.Result{}, err
-			}
-			return ctrl.Result{RequeueAfter: r.processingDelay()}, nil
+			return r.submitUpdate(ctx, project, creds, resource, desired, actual)
 		}
 		if observing(resource) {
 			return r.observe(ctx, resource, desired, actual)
@@ -345,13 +339,7 @@ func (r *ResourceReconciler) sync(ctx context.Context, project *selectelv1alpha1
 			if observing(resource) {
 				return r.observe(ctx, resource, desired, actual)
 			}
-			if err := r.put(ctx, project, creds, resource, desired); err != nil {
-				return r.callResult(ctx, resource, err)
-			}
-			if err := r.mark(ctx, resource, cdnv1alpha1.PhaseProcessing, metav1.ConditionFalse, reasonProcessing, "configuration update submitted"); err != nil {
-				return ctrl.Result{}, err
-			}
-			return ctrl.Result{RequeueAfter: r.processingDelay()}, nil
+			return r.submitUpdate(ctx, project, creds, resource, desired, actual)
 		}
 		if observing(resource) {
 			return r.observe(ctx, resource, desired, actual)
@@ -361,11 +349,25 @@ func (r *ResourceReconciler) sync(ctx context.Context, project *selectelv1alpha1
 		}
 		return ctrl.Result{RequeueAfter: requeueReady}, nil
 	default:
-		if err := r.mark(ctx, resource, cdnv1alpha1.PhaseProcessing, metav1.ConditionFalse, reasonProcessing, "waiting for a Selectel status"); err != nil {
+		if err := r.finish(ctx, resource, cdnv1alpha1.PhaseProcessing, metav1.ConditionFalse, reasonProcessing, "waiting for a Selectel status", resource.Status.Drift); err != nil {
 			return ctrl.Result{}, err
 		}
 		return ctrl.Result{RequeueAfter: r.processingDelay()}, nil
 	}
+}
+
+func (r *ResourceReconciler) submitUpdate(ctx context.Context, project *selectelv1alpha1.Project, creds *iam.Credentials, resource *cdnv1alpha1.Resource, desired, actual map[string]any) (ctrl.Result, error) {
+	if err := r.put(ctx, project, creds, resource, desired); err != nil {
+		return r.callResult(ctx, resource, err)
+	}
+	drift, _, err := Diff(desired, actual)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+	if err := r.finish(ctx, resource, cdnv1alpha1.PhaseProcessing, metav1.ConditionFalse, reasonProcessing, "configuration update submitted", drift); err != nil {
+		return ctrl.Result{}, err
+	}
+	return ctrl.Result{RequeueAfter: r.processingDelay()}, nil
 }
 
 func (r *ResourceReconciler) missing(ctx context.Context, project *selectelv1alpha1.Project, creds *iam.Credentials, resource *cdnv1alpha1.Resource, desired map[string]any) (ctrl.Result, error) {

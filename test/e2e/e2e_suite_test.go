@@ -33,7 +33,7 @@ import (
 
 var (
 	// managerImage is the manager image to be built and loaded for testing.
-	managerImage = "example.com/selectel-operator:v0.0.3"
+	managerImage = "example.com/selectel-operator:v0.0.4"
 	// shouldCleanupCertManager tracks whether CertManager was installed by this suite.
 	shouldCleanupCertManager = false
 )

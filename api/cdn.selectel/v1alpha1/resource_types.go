@@ -690,7 +690,7 @@ type ResourceStatus struct {
 	// +optional
 	TaskID string `json:"taskID,omitempty"`
 
-	// drift lists spec fields Manage would update. Empty when the spec matches Selectel.
+	// drift lists spec fields that differ from Selectel. Manage records them when it sends an update. Empty when the spec matches.
 	// +optional
 	Drift []FieldDrift `json:"drift,omitempty"`
 

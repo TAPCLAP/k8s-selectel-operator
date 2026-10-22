@@ -219,6 +219,7 @@ var _ = Describe("Resource controller", func() {
 		Expect(k8sClient.Update(ctx, &fresh)).To(Succeed())
 		runReconcile("static")
 		Expect(fake.puts).To(Equal(1))
+		Expect(getResource("static").Status.Drift).NotTo(BeEmpty())
 	})
 
 	It("does not put while Selectel is still processing", func() {
@@ -332,6 +333,7 @@ var _ = Describe("Resource controller", func() {
 		runReconcile("imported")
 		Expect(fake.posts).To(Equal(0))
 		Expect(fake.puts).To(Equal(1))
+		Expect(getResource("imported").Status.Drift).NotTo(BeEmpty())
 	})
 
 	It("links an existing name while observing and waits when the name is missing", func() {
