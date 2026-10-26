@@ -22,29 +22,32 @@ import (
 	"strings"
 )
 
-// patternError marks an allowedDomains entry that cannot be compiled.
+// patternError marks a domains entry that cannot be compiled.
 type patternError struct {
 	pattern string
 	err     error
 }
 
 func (e *patternError) Error() string {
-	return fmt.Sprintf("allowedDomains pattern %q is invalid: %s", e.pattern, e.err.Error())
+	return fmt.Sprintf("domains pattern %q is invalid: %s", e.pattern, e.err.Error())
 }
 
 func (e *patternError) Unwrap() error { return e.err }
 
-// IsPatternError reports whether err is a bad allowedDomains pattern.
+// IsPatternError reports whether err is a bad domains pattern.
 func IsPatternError(err error) bool {
 	_, ok := err.(*patternError)
 	return ok
 }
 
 // AllowsDomains reports whether every name matches a pattern.
-// An empty pattern list allows every name.
+// An empty name list is allowed. An empty pattern list allows no personal domain.
 func AllowsDomains(patterns, names []string) error {
-	if len(patterns) == 0 || len(names) == 0 {
+	if len(names) == 0 {
 		return nil
+	}
+	if len(patterns) == 0 {
+		return fmt.Errorf("domain %q is not allowed", names[0])
 	}
 	var invalid error
 	for _, name := range names {

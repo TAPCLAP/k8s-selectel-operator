@@ -36,7 +36,7 @@ helm install selectel-operator \
   --create-namespace
 ```
 
-`<version>` is the git tag without the leading `v`. A tag `v*` publishes the image `ghcr.io/<owner>/<repo>:<tag>` and both charts. The chart in this repository is `0.0.5`. From a checkout:
+`<version>` is the git tag without the leading `v`. A tag `v*` publishes the image `ghcr.io/<owner>/<repo>:<tag>` and both charts. The chart in this repository is `0.0.7`. From a checkout:
 
 ```bash
 helm install selectel-operator helm/selectel-operator \
@@ -65,7 +65,7 @@ stringData:
   projectName: production
 ```
 
-2. Create a cluster-scoped `Project`. `allowedNamespaces` names the tenant namespaces that may use it. `certificates[].id` is the CDN API certificate `seq`. An empty list denies every namespace.
+2. Create a cluster-scoped `Project`. `allowedNamespaces` names the tenant namespaces that may use it. `certificates[].id` is the CDN API certificate `seq`. `domains` lists the personal domains that namespace may put in `spec.names`. An empty `allowedNamespaces` list denies every namespace. An empty `domains` list denies personal domains.
 
 ```yaml
 apiVersion: selectel.tapclap.com/v1alpha1
@@ -77,6 +77,8 @@ spec:
     - name: media
       certificates:
         - id: 1
+      domains:
+        - cdn.example.com
   credentialsSecretRef:
     name: selectel-production
     namespace: selectel-infra
@@ -133,7 +135,7 @@ Switch the policy to `Manage` after `status.drift` is empty. Omit `resourceID` a
 - Creates the CDN resource once and writes `status.id` before polling. A repeated reconcile does not send a second `POST`.
 - Adopts an existing resource when `spec.resourceID` is set, or when `Observe` finds the same name. `managementPolicy: Observe` stops after linking the resource and writes the difference in `status.drift`.
 - Sends `PUT /resources/{id}` when the spec differs from the API. While Selectel reports `Processing`, it waits and does not send another configuration change.
-- Refuses create and update when the namespace is missing from `allowedNamespaces`, or when `certificate.id` is not on that namespace's list. `Ready` is `False` with reason `NamespaceNotAllowed` or `CertificateNotAllowed`.
+- Refuses create and update when the namespace is missing from `allowedNamespaces`, when `certificate.id` is not on that namespace's list, or when `spec.names` does not match that namespace's `domains`. `Ready` is `False` with reason `NamespaceNotAllowed`, `CertificateNotAllowed`, or `DomainNotAllowed`.
 - On delete, `deletionPolicy: Deactivate` (the default) sends `{"active": false}` and then drops the finalizer. `Orphan` drops the finalizer and leaves the Selectel resource unchanged. The CDN API in this spec has no delete operation, so the Selectel object remains. Whether `active: false` frees the name has to be checked on a live project before treating CR deletion as CDN deletion. Details are in [docs/deletion.md](docs/deletion.md).
 
 ## License

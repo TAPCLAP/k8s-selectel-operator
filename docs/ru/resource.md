@@ -186,8 +186,8 @@ Seq должен быть в записи `allowedNamespaces`, которая п
 | `Processing` | False | Ожидание. Следующий reconcile через `--processing-interval` (по умолчанию 3 минуты) плюс случайные 0–30 секунд. Конфигурация не меняется. |
 | `NamespaceNotAllowed` | False | Namespace нет в `allowedNamespaces`. |
 | `CertificateNotAllowed` | False | `certificate.id` нет в записи namespace. |
-| `DomainNotAllowed` | False | Запись `spec.names` не совпала ни с одним шаблоном `allowedDomains`. |
-| `DomainPatternInvalid` | False | Шаблон `allowedDomains` не компилируется. |
+| `DomainNotAllowed` | False | Запись `spec.names` не совпала ни с одним шаблоном `domains` этой записи namespace. |
+| `DomainPatternInvalid` | False | Шаблон `domains` в записи namespace не компилируется. |
 | `ProjectNotFound` | False | `projectRef` не существует. |
 | `ProjectNotReady` | False | Project ещё не может выпустить токен. |
 | `SecretNamespaceForbidden` | False | Secret проекта лежит вне namespace оператора. |

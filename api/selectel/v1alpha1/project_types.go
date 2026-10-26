@@ -51,7 +51,7 @@ type AllowedCertificate struct {
 }
 
 // NamespaceAccess grants one namespace, or every namespace when name is "*",
-// the right to use this Project and an explicit set of certificate seq values.
+// the right to use this Project and an explicit set of certificates and personal domains.
 type NamespaceAccess struct {
 	// name is a namespace name. "*" matches every namespace that has no own entry.
 	// +kubebuilder:validation:MinLength=1
@@ -62,6 +62,11 @@ type NamespaceAccess struct {
 	// An empty list allows CDN resources without a custom certificate.
 	// +optional
 	Certificates []AllowedCertificate `json:"certificates,omitempty"`
+
+	// domains lists personal domains spec.names may use in this namespace.
+	// An empty list allows no personal domain. A pattern is an exact name, a glob, or a /regex/.
+	// +optional
+	Domains []string `json:"domains,omitempty"`
 }
 
 // ProjectSpec defines how the operator authenticates to one Selectel project
@@ -72,14 +77,9 @@ type ProjectSpec struct {
 	AuthURL string `json:"authURL,omitempty"`
 
 	// allowedNamespaces lists namespaces that may reference this Project.
-	// An empty list allows none. A namespace entry replaces a "*" entry and does not inherit its certificates.
+	// An empty list allows none. A namespace entry replaces a "*" entry and does not inherit its certificates or domains.
 	// +optional
 	AllowedNamespaces []NamespaceAccess `json:"allowedNamespaces,omitempty"`
-
-	// allowedDomains lists personal domains spec.names may use.
-	// An empty list allows any domain. A pattern is an exact name, a glob, or a /regex/.
-	// +optional
-	AllowedDomains []string `json:"allowedDomains,omitempty"`
 
 	// credentialsSecretRef is the Secret with accountId, username, password, and projectName.
 	// +required

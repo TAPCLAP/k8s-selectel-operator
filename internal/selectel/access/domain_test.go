@@ -30,8 +30,11 @@ func TestAllowsDomains(t *testing.T) {
 	if err := AllowsDomains(patterns, allowed); err != nil {
 		t.Fatal(err)
 	}
-	if err := AllowsDomains(nil, []string{"anywhere.example"}); err != nil {
+	if err := AllowsDomains(nil, nil); err != nil {
 		t.Fatal(err)
+	}
+	if err := AllowsDomains(nil, []string{"anywhere.example"}); err == nil || IsPatternError(err) {
+		t.Fatalf("expected an empty pattern list to reject a domain, got %v", err)
 	}
 	if err := AllowsDomains(patterns, []string{"a.b.tapclap.com"}); err == nil || IsPatternError(err) {
 		t.Fatalf("expected a rejected domain, got %v", err)

@@ -2,8 +2,8 @@ apiVersion: v2
 name: selectel-operator-crds
 description: CRDs for selectel-operator. Install this chart when CRDs are managed separately from the operator.
 type: application
-version: 0.0.5
-appVersion: "v0.0.5"
+version: 0.0.7
+appVersion: "v0.0.7"
 kubeVersion: ">=1.30.0-0"
 keywords:
   - selectel

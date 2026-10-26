@@ -47,21 +47,14 @@ spec:
           spec:
             description: spec defines the desired state of Project
             properties:
-              allowedDomains:
-                description: |-
-                  allowedDomains lists personal domains spec.names may use.
-                  An empty list allows any domain. A pattern is an exact name, a glob, or a /regex/.
-                items:
-                  type: string
-                type: array
               allowedNamespaces:
                 description: |-
                   allowedNamespaces lists namespaces that may reference this Project.
-                  An empty list allows none. A namespace entry replaces a "*" entry and does not inherit its certificates.
+                  An empty list allows none. A namespace entry replaces a "*" entry and does not inherit its certificates or domains.
                 items:
                   description: |-
                     NamespaceAccess grants one namespace, or every namespace when name is "*",
-                    the right to use this Project and an explicit set of certificate seq values.
+                    the right to use this Project and an explicit set of certificates and personal domains.
                   properties:
                     certificates:
                       description: |-
@@ -81,6 +74,13 @@ spec:
                         required:
                         - id
                         type: object
+                      type: array
+                    domains:
+                      description: |-
+                        domains lists personal domains spec.names may use in this namespace.
+                        An empty list allows no personal domain. A pattern is an exact name, a glob, or a /regex/.
+                      items:
+                        type: string
                       type: array
                     name:
                       description: name is a namespace name. "*" matches every namespace

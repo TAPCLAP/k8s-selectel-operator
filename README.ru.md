@@ -34,7 +34,7 @@ helm install selectel-operator \
   --create-namespace
 ```
 
-`<version>` — это git-тег без начального `v`. Тег `v*` публикует образ `ghcr.io/<owner>/<repo>:<tag>` и оба чарта. Чарт в этом репозитории имеет версию `0.0.5`. Из исходников:
+`<version>` — это git-тег без начального `v`. Тег `v*` публикует образ `ghcr.io/<owner>/<repo>:<tag>` и оба чарта. Чарт в этом репозитории имеет версию `0.0.7`. Из исходников:
 
 ```bash
 helm install selectel-operator helm/selectel-operator \
@@ -63,7 +63,7 @@ stringData:
   projectName: production
 ```
 
-2. Создайте cluster-scoped `Project`. `allowedNamespaces` перечисляет namespace тенантов, которым можно им пользоваться. `certificates[].id` — это `seq` сертификата в CDN API. Пустой список не разрешает ни один namespace.
+2. Создайте cluster-scoped `Project`. `allowedNamespaces` перечисляет namespace тенантов, которым можно им пользоваться. `certificates[].id` — это `seq` сертификата в CDN API. `domains` перечисляет персональные домены, которые этот namespace может указать в `spec.names`. Пустой `allowedNamespaces` не разрешает ни один namespace. Пустой `domains` не разрешает персональные домены.
 
 ```yaml
 apiVersion: selectel.tapclap.com/v1alpha1
@@ -75,6 +75,8 @@ spec:
     - name: media
       certificates:
         - id: 1
+      domains:
+        - cdn.example.com
   credentialsSecretRef:
     name: selectel-production
     namespace: selectel-infra
@@ -131,7 +133,7 @@ spec:
 - Создаёт CDN-ресурс один раз и записывает `status.id` до опроса готовности. Повторный reconcile не шлёт второй `POST`.
 - Усыновляет существующий ресурс, если задан `spec.resourceID`, или если `Observe` находит то же имя. `managementPolicy: Observe` останавливается после привязки и пишет отличие в `status.drift`.
 - Шлёт `PUT /resources/{id}`, когда spec отличается от API. Пока Selectel сообщает `Processing`, контроллер ждёт и не отправляет следующее изменение конфигурации.
-- Отказывает в create и update, если namespace нет в `allowedNamespaces` или `certificate.id` нет в списке этого namespace. `Ready` равен `False`, причина `NamespaceNotAllowed` или `CertificateNotAllowed`.
+- Отказывает в create и update, если namespace нет в `allowedNamespaces`, `certificate.id` нет в списке этого namespace или `spec.names` не совпадает с `domains` этого namespace. `Ready` равен `False`, причина `NamespaceNotAllowed`, `CertificateNotAllowed` или `DomainNotAllowed`.
 - При удалении `deletionPolicy: Deactivate` (значение по умолчанию) шлёт `{"active": false}` и снимает finalizer. `Orphan` снимает finalizer и оставляет ресурс Selectel как есть. В этой спеке CDN API нет операции удаления, объект в Selectel остаётся. Освобождает ли `active: false` имя, нужно проверить на живом проекте, прежде чем считать удаление CR удалением CDN. Подробности в [docs/ru/deletion.md](docs/ru/deletion.md).
 
 ## Лицензия

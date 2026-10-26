@@ -190,7 +190,7 @@ func (r *ResourceReconciler) authorizedProject(ctx context.Context, resource *cd
 		result, err := r.fail(ctx, resource, cdnv1alpha1.PhasePending, reasonProjectNotReady, "Project is not ready", requeueDenied)
 		return nil, result, err
 	}
-	if err := access.AllowsDomains(project.Spec.AllowedDomains, resource.Spec.Names); err != nil {
+	if err := access.AllowsDomains(entry.Domains, resource.Spec.Names); err != nil {
 		reason := reasonDomainNotAllowed
 		if access.IsPatternError(err) {
 			reason = reasonDomainPatternInvalid

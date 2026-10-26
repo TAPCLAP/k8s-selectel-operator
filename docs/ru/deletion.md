@@ -22,7 +22,7 @@ spec:
 
 ## Когда finalizer всё равно выполняется
 
-Удаление выполняет политику, даже если namespace убрали из `Project.spec.allowedNamespaces` и даже если `certificate.id` больше нет в списке. Деактивация не меняет привязку сертификата, а застрявший finalizer заблокировал бы удаление CR. Проверка namespace относится к create, update и adopt.
+Удаление выполняет политику, даже если namespace убрали из `Project.spec.allowedNamespaces`, даже если `certificate.id` больше нет в списке, и даже если `spec.names` больше не совпадает с `domains`. Деактивация не меняет привязку сертификата, а застрявший finalizer заблокировал бы удаление CR. Проверки namespace, сертификата и домена относятся к create, update и adopt.
 
 Если Selectel уже отвечает 404 на известный id, finalizer снимается. Деактивировать нечего.
 

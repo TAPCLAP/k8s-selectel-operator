@@ -429,15 +429,19 @@ var _ = Describe("Resource controller", func() {
 		Expect(apierrors.IsNotFound(err)).To(BeTrue())
 	})
 
-	It("rejects spec.names outside allowedDomains", func() {
-		var project selectelv1alpha1.Project
-		Expect(k8sClient.Get(ctx, types.NamespacedName{Name: "production"}, &project)).To(Succeed())
-		project.Spec.AllowedDomains = []string{"*.g.tapclap.com"}
-		Expect(k8sClient.Update(ctx, &project)).To(Succeed())
-
+	It("rejects spec.names outside the namespace domains", func() {
 		res := resourceSpec("named", nil)
 		res.Spec.Names = []string{"other.example.com"}
 		Expect(k8sClient.Create(ctx, res)).To(Succeed())
+		runReconcile("named")
+		Expect(fake.posts).To(Equal(0))
+		Expect(condition("named").Reason).To(Equal(reasonDomainNotAllowed))
+
+		replaceProjectAccess(iamServer.URL, []selectelv1alpha1.NamespaceAccess{{
+			Name:         namespace,
+			Certificates: []selectelv1alpha1.AllowedCertificate{{ID: 1}, {ID: 4}},
+			Domains:      []string{"*.g.tapclap.com"},
+		}})
 		runReconcile("named")
 		Expect(fake.posts).To(Equal(0))
 		Expect(condition("named").Reason).To(Equal(reasonDomainNotAllowed))
@@ -447,6 +451,19 @@ var _ = Describe("Resource controller", func() {
 		Expect(k8sClient.Update(ctx, &fresh)).To(Succeed())
 		runReconcile("named")
 		Expect(fake.posts).To(Equal(1))
+	})
+
+	It("does not inherit wildcard domains into an explicit namespace entry", func() {
+		replaceProjectAccess(iamServer.URL, []selectelv1alpha1.NamespaceAccess{
+			{Name: "*", Domains: []string{"*.example.com"}},
+			{Name: namespace},
+		})
+		res := resourceSpec("named", nil)
+		res.Spec.Names = []string{"cdn.example.com"}
+		Expect(k8sClient.Create(ctx, res)).To(Succeed())
+		runReconcile("named")
+		Expect(fake.posts).To(Equal(0))
+		Expect(condition("named").Reason).To(Equal(reasonDomainNotAllowed))
 	})
 
 	It("refuses a certificate outside the namespace allowlist and allows a resource without one", func() {

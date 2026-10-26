@@ -18,9 +18,13 @@ spec:
       certificates:
         - id: 1
         - id: 4
+      domains:
+        - "*.g.tapclap.com"
     - name: games
       certificates:
         - id: 4
+      domains:
+        - cdn.games.example
   credentialsSecretRef:
     name: selectel-production
     namespace: selectel-infra
@@ -68,23 +72,27 @@ stringData:
 | `*` | Namespace без своей записи могут пользоваться Project. |
 | Пустой список или поле опущено | Ни один namespace не может пользоваться Project. |
 
-Точная запись заменяет `*`. Сертификаты из `*` к точной записи не добавляются. Другие шаблоны и label selector не поддерживаются.
+Точная запись заменяет `*`. Сертификаты и домены из `*` к точной записи не добавляются. Другие шаблоны и label selector не поддерживаются.
 
 ```yaml
 allowedNamespaces:
   - name: "*"
     certificates:
       - id: 9
+    domains:
+      - "*.example.com"
   - name: media
     certificates:
       - id: 1
+    domains:
+      - "*.g.tapclap.com"
 ```
 
-Здесь `media` может привязать только сертификат `1`. Сертификат `9` доступен остальным namespace и недоступен `media`. Namespace с пустым `certificates` может создать CDN-ресурс и не может задать `spec.certificate`.
+Здесь `media` может привязать сертификат `1` и персональные домены, которые совпадают с `*.g.tapclap.com`. Сертификат `9` и `*.example.com` доступны остальным namespace и недоступны `media`. Namespace с пустым `certificates` может создать CDN-ресурс и не может задать `spec.certificate`. Namespace с пустым `domains` не может задать `spec.names`.
 
 Удаление namespace из списка останавливает create и update его CDN-ресурсов. Уже созданные в Selectel ресурсы остаются как есть. Удаление самого custom resource всё равно выполняет deletion policy, чтобы finalizer мог завершиться. См. [deletion.md](deletion.md).
 
-Изменение `allowedNamespaces`, включая списки сертификатов, ставит в очередь каждый CDN `Resource`, у которого `spec.projectRef.name` совпадает с этим Project.
+Изменение `allowedNamespaces`, включая списки сертификатов и доменов, ставит в очередь каждый CDN `Resource`, у которого `spec.projectRef.name` совпадает с этим Project.
 
 ## Список сертификатов
 
@@ -96,7 +104,7 @@ allowedNamespaces:
 
 ## Персональные домены
 
-`spec.allowedDomains` ограничивает `spec.names` у CDN-ресурсов этого Project. Пустой список или отсутствие поля разрешает любой персональный домен. Непустой список требует, чтобы каждое имя совпало хотя бы с одним шаблоном. Выданный домен `*.selcdn.net` в эту проверку не входит.
+`allowedNamespaces[].domains` ограничивает `spec.names` для записи namespace, которая подходит Resource. Пустой список не разрешает персональный домен. Непустой список требует, чтобы каждое имя совпало хотя бы с одним шаблоном. Выданный домен `*.selcdn.net` в эту проверку не входит. Точная запись namespace не наследует `domains` от `*`.
 
 | Шаблон | Совпадение |
 | --- | --- |

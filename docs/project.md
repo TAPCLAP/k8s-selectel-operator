@@ -18,9 +18,13 @@ spec:
       certificates:
         - id: 1
         - id: 4
+      domains:
+        - "*.g.tapclap.com"
     - name: games
       certificates:
         - id: 4
+      domains:
+        - cdn.games.example
   credentialsSecretRef:
     name: selectel-production
     namespace: selectel-infra
@@ -68,23 +72,27 @@ The controller requests `POST {authURL}/auth/tokens` with a password identity an
 | `*` | Namespaces that have no exact entry may use the Project. |
 | Empty list, or field omitted | No namespace may use the Project. |
 
-An exact entry replaces `*`. Certificates from `*` are not added to the exact entry. Other patterns and label selectors are not supported.
+An exact entry replaces `*`. Certificates and domains from `*` are not added to the exact entry. Other patterns and label selectors are not supported.
 
 ```yaml
 allowedNamespaces:
   - name: "*"
     certificates:
       - id: 9
+    domains:
+      - "*.example.com"
   - name: media
     certificates:
       - id: 1
+    domains:
+      - "*.g.tapclap.com"
 ```
 
-Here `media` may bind certificate `1` only. Certificate `9` is available to other namespaces, and is not available to `media`. A namespace with an empty `certificates` list may create a CDN resource and may not set `spec.certificate`.
+Here `media` may bind certificate `1` and personal domains that match `*.g.tapclap.com`. Certificate `9` and `*.example.com` are available to other namespaces, and are not available to `media`. A namespace with an empty `certificates` list may create a CDN resource and may not set `spec.certificate`. A namespace with an empty `domains` list may not set `spec.names`.
 
 Removing a namespace from the list stops create and update for its CDN resources. Resources already created in Selectel stay as they are. Deleting the custom resource still runs its deletion policy, so the finalizer can complete. See [deletion.md](deletion.md).
 
-Changing `allowedNamespaces`, including the certificate lists, requeues every CDN `Resource` whose `spec.projectRef.name` matches this Project.
+Changing `allowedNamespaces`, including the certificate and domain lists, requeues every CDN `Resource` whose `spec.projectRef.name` matches this Project.
 
 ## Certificate allowlist
 
@@ -96,7 +104,7 @@ Taking an id off the list does not detach a certificate already bound in Selecte
 
 ## Personal domains
 
-`spec.allowedDomains` limits `spec.names` on CDN resources that use this Project. An empty list, or an omitted field, allows any personal domain. A non-empty list requires every name to match at least one pattern. The assigned `*.selcdn.net` domain is not part of this check.
+`allowedNamespaces[].domains` limits `spec.names` for the namespace entry that matches the Resource. An empty list allows no personal domain. A non-empty list requires every name to match at least one pattern. The assigned `*.selcdn.net` domain is not part of this check. An exact namespace entry does not inherit `domains` from `*`.
 
 | Pattern | Match |
 | --- | --- |

@@ -22,7 +22,7 @@ Check on a live project whether `active: false` releases the resource name befor
 
 ## When the finalizer still runs
 
-Deletion runs the policy even if the namespace was removed from `Project.spec.allowedNamespaces`, and even if `certificate.id` is no longer on the allowlist. Deactivation does not change the certificate binding, and a stuck finalizer would block CR deletion. The namespace check applies to create, update, and adopt.
+Deletion runs the policy even if the namespace was removed from `Project.spec.allowedNamespaces`, even if `certificate.id` is no longer on the allowlist, and even if `spec.names` no longer matches `domains`. Deactivation does not change the certificate binding, and a stuck finalizer would block CR deletion. The namespace, certificate, and domain checks apply to create, update, and adopt.
 
 If Selectel already returns 404 for a known id, the finalizer is removed. There is nothing left to deactivate.
 

@@ -7,6 +7,8 @@ spec:
     - name: media
       certificates:
         - id: 1
+      domains:
+        - cdn.example.com
   credentialsSecretRef:
     name: selectel-production
     namespace: selectel-infra

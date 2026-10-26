@@ -186,8 +186,8 @@ The API body receives the integer as `certificate`. The operator does not upload
 | `Processing` | False | Waiting. Reconcile again after `--processing-interval` (default 3 minutes) plus a random 0–30 seconds. Configuration is not changed. |
 | `NamespaceNotAllowed` | False | Namespace is not in `allowedNamespaces`. |
 | `CertificateNotAllowed` | False | `certificate.id` is not on the namespace entry. |
-| `DomainNotAllowed` | False | A `spec.names` entry matches no `allowedDomains` pattern. |
-| `DomainPatternInvalid` | False | An `allowedDomains` pattern cannot be compiled. |
+| `DomainNotAllowed` | False | A `spec.names` entry matches no `domains` pattern on the namespace entry. |
+| `DomainPatternInvalid` | False | A `domains` pattern on the namespace entry cannot be compiled. |
 | `ProjectNotFound` | False | `projectRef` does not exist. |
 | `ProjectNotReady` | False | Project cannot issue a token yet. |
 | `SecretNamespaceForbidden` | False | Project Secret is outside the operator namespace. |
